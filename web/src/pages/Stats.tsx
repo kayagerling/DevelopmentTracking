@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Avatar } from "../components/Avatar";
 import { BarList, ChartCard, ColumnChart, Legend, LineChart, type BarRow } from "../components/charts";
 import type { Dashboard, Prd } from "../types";
+import { haptic } from "../haptics";
 
 const C = {
   created: "var(--viz-1)",
@@ -142,7 +143,7 @@ export function StatsPage({ data, onBack }: { data: Dashboard; onBack: () => voi
   return (
     <div className="stats-page">
       <div className="stats-page__head">
-        <button className="back" onClick={onBack}>
+        <button ref={haptic} className="back" onClick={onBack}>
           <span aria-hidden>‹</span> Overzicht
         </button>
         <h2>Statistieken</h2>

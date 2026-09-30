@@ -1,4 +1,5 @@
 import type { Prd } from "../types";
+import { haptic } from "../haptics";
 import { AvatarStack } from "./Avatar";
 import { BranchIcon } from "./BranchCard";
 import { ProgressBar, progressTone } from "./ProgressBar";
@@ -9,7 +10,7 @@ export function StatusPill({ prd }: { prd: Prd }) {
 
 export function PrdCard({ prd, onOpen }: { prd: Prd; onOpen: () => void }) {
   return (
-    <button className="card prd" onClick={onOpen}>
+    <button ref={haptic} className="card prd" onClick={onOpen}>
       <div className="prd__top">
         <span className="prd__nr">{prd.prdNumber}</span>
         <StatusPill prd={prd} />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Branch } from "../types";
+import { haptic } from "../haptics";
 
 const COLLAPSED = 8;
 
@@ -34,7 +35,7 @@ export function BranchCard({ branches, onOpenPrd }: { branches: Branch[]; onOpen
                 <span>{b.name}</span>
               </a>
               {b.prdId ? (
-                <button className="tag tag--link" onClick={() => onOpenPrd(b.prdId!)}>
+                <button ref={haptic} className="tag tag--link" onClick={() => onOpenPrd(b.prdId!)}>
                   {b.prdNumber}
                 </button>
               ) : (

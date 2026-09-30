@@ -6,6 +6,7 @@ import { PrdSheet } from "./components/PrdSheet";
 import { ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
 import { WelcomeDialog } from "./components/WelcomeDialog";
+import { haptic } from "./haptics";
 import { IS_STATIC, useDashboard, useTheme } from "./hooks";
 import { StatsPage } from "./pages/Stats";
 import type { Prd } from "./types";
@@ -82,10 +83,10 @@ export default function App() {
           </div>
           <div className="topbar__actions">
             <nav className="segmented nav" aria-label="Pagina">
-              <button className={page === "overzicht" ? "active" : ""} aria-current={page === "overzicht" ? "page" : undefined} onClick={() => go("overzicht")}>
+              <button ref={haptic} className={page === "overzicht" ? "active" : ""} aria-current={page === "overzicht" ? "page" : undefined} onClick={() => go("overzicht")}>
                 Overzicht
               </button>
-              <button className={page === "statistieken" ? "active" : ""} aria-current={page === "statistieken" ? "page" : undefined} onClick={() => go("statistieken")}>
+              <button ref={haptic} className={page === "statistieken" ? "active" : ""} aria-current={page === "statistieken" ? "page" : undefined} onClick={() => go("statistieken")}>
                 Statistieken
               </button>
             </nav>
