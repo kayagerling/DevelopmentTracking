@@ -89,6 +89,15 @@ async function askClaude(title: string, body: string): Promise<string> {
 }
 
 const pending = new Set<string>();
+
+/** Wacht tot alle AI-uitleg die in de wachtrij staat klaar is (voor de export naar GitHub Pages). */
+export async function flushSimplify(): Promise<void> {
+  let current: Promise<void>;
+  do {
+    current = queue;
+    await current;
+  } while (current !== queue);
+}
 let queue: Promise<void> = Promise.resolve();
 
 /**

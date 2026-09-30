@@ -61,10 +61,14 @@ export function PrdSheet({ prd, onClose }: { prd: Prd; onClose: () => void }) {
           </div>
         </dl>
 
-        <button className="link" onClick={() => setShowTech((s) => !s)}>
-          {showTech ? "Verberg technische beschrijving" : "Toon technische beschrijving"}
-        </button>
-        {showTech && <pre className="tech">{prd.description || "Geen beschrijving."}</pre>}
+        {prd.description && (
+          <>
+            <button className="link" onClick={() => setShowTech((s) => !s)}>
+              {showTech ? "Verberg technische beschrijving" : "Toon technische beschrijving"}
+            </button>
+            {showTech && <pre className="tech">{prd.description}</pre>}
+          </>
+        )}
 
         {prd.url && (
           <a className="button" href={prd.url} target="_blank" rel="noreferrer">

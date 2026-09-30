@@ -1,0 +1,79 @@
+name: Dashboard naar GitHub Pages
+
+# Haalt het scrumboard op, maakt de versimpelde uitleg en zet de site online.
+on:
+  schedule:
+    - cron: "*/15 * * * *" # elke ~15 minuten (GitHub kan dit iets vertragen)
+  workflow_dispatch: # handmatig starten via het tabblad Actions
+  push:
+    branches: [main]
+  issues: # direct bijwerken bij wijzigingen aan issues in déze repo
+    types: [opened, edited, closed, reopened, assigned, unassigned, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installeren
+        run: npm install --no-audit --no-fund
+
+      - name: Website bouwen
+        run: npm run build -w web -- --base=./
+        env:
+          VITE_STATIC: "true"
+
+      - name: Server-code bouwen
+        run: npm run build -w server
+
+      # Bewaart de AI-uitleg tussen runs, zodat elke PRD maar één keer vertaald wordt.
+      - name: Cache versimpelde beschrijvingen
+        uses: actions/cache@v4
+        with:
+          path: server/.cache
+          key: simplified-${{ github.run_id }}
+          restore-keys: simplified-
+
+      - name: Scrumboard ophalen (dashboard.json)
+        run: node server/dist/export.js web/dist/dashboard.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_OWNER: ${{ vars.PROJECT_OWNER }}
+          GITHUB_OWNER_TYPE: ${{ vars.PROJECT_OWNER_TYPE || 'user' }}
+          GITHUB_PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          STATUS_FIELD: ${{ vars.STATUS_FIELD || 'Status' }}
+          THEME_FIELD: ${{ vars.THEME_FIELD || 'Thema' }}
+          THEME_LABEL_PREFIX: ${{ vars.THEME_LABEL_PREFIX || 'thema:' }}
+          STATUS_PROGRESS: ${{ vars.STATUS_PROGRESS }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-haiku-4-5' }}
+          PUBLISH_TECHNICAL_DESCRIPTION: ${{ vars.PUBLISH_TECHNICAL_DESCRIPTION || 'false' }}
+          REFRESH_SECONDS: "60"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

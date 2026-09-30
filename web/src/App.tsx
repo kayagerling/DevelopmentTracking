@@ -4,7 +4,7 @@ import { PrdCard } from "./components/PrdCard";
 import { PrdSheet } from "./components/PrdSheet";
 import { ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
-import { useDashboard, useTheme } from "./hooks";
+import { IS_STATIC, useDashboard, useTheme } from "./hooks";
 import type { Prd } from "./types";
 
 type StatusFilter = "all" | "todo" | "busy" | "done";
@@ -59,11 +59,15 @@ export default function App() {
           </div>
           <div className="topbar__actions">
             {data && (
-              <button className="live" onClick={refresh} title="Nu verversen">
+              <button className="live" onClick={refresh} title={IS_STATIC ? "Wordt elke ~15 minuten bijgewerkt" : "Nu verversen"}>
                 <span className={`live__dot ${loading ? "is-loading" : ""} ${data.source === "demo" ? "is-demo" : ""}`} />
                 <span className="small">
-                  {data.source === "demo" ? "Demo" : "Live"} ·{" "}
-                  {new Date(data.fetchedAt).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}
+                  {data.source === "demo" ? "Demo" : IS_STATIC ? "Bijgewerkt" : "Live"} ·{" "}
+                  {new Date(data.fetchedAt).toLocaleString("nl-NL", {
+                    ...(new Date(data.fetchedAt).toDateString() === new Date().toDateString() ? {} : { day: "numeric", month: "short" }),
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               </button>
             )}
@@ -74,7 +78,7 @@ export default function App() {
 
       <main className="container">
         {(error || data?.error) && (
-          <div className="notice">Kon GitHub niet bereiken: {error ?? data?.error}. De laatst bekende gegevens worden getoond.</div>
+          <div className="notice">{IS_STATIC ? "Kon de gegevens niet laden" : "Kon GitHub niet bereiken"}: {error ?? data?.error}. De laatst bekende gegevens worden getoond.</div>
         )}
         {data?.source === "demo" && (
           <div className="notice notice--info">

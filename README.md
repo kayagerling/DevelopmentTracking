@@ -28,6 +28,31 @@ docker compose up -d --build
 
 Open http://localhost:3000.
 
+## Hosten op GitHub Pages
+
+GitHub Pages kan geen server draaien. Daarom maakt een GitHub Action (`.github/workflows/pages.yml`) elke ~15 minuten een momentopname (`dashboard.json`) van het scrumboard en zet de site opnieuw online. Dat gebeurt ook bij elke push naar `main` en bij wijzigingen aan issues in deze repo.
+
+**Let op:** een Pages-site is openbaar. De volledige technische PRD-tekst wordt standaard níet gepubliceerd (zet de variable `PUBLISH_TECHNICAL_DESCRIPTION` op `true` als je dat wel wilt). Titels, status, personen en de versimpelde uitleg zijn wel zichtbaar.
+
+Eenmalig instellen in de repo op GitHub (**Settings**):
+
+1. **Pages** → *Build and deployment* → *Source*: **GitHub Actions**.
+2. **Secrets and variables → Actions → Secrets**:
+   - `PROJECT_TOKEN`: een *classic* personal access token met `repo` en `read:project` ([aanmaken](https://github.com/settings/tokens/new?scopes=repo,read:project&description=DevelopmentTracker)).
+   - `ANTHROPIC_API_KEY`: (optioneel) voor de uitleg in gewone taal.
+3. **Secrets and variables → Actions → Variables** (zelfde waarden als in je `.env`, alleen andere namen omdat GitHub geen namen toestaat die met `GITHUB_` beginnen):
+
+   | Variable | Komt overeen met in `.env` |
+   |---|---|
+   | `PROJECT_OWNER` | `GITHUB_OWNER` |
+   | `PROJECT_OWNER_TYPE` | `GITHUB_OWNER_TYPE` |
+   | `PROJECT_NUMBER` | `GITHUB_PROJECT_NUMBER` |
+   | `STATUS_FIELD`, `THEME_FIELD`, `THEME_LABEL_PREFIX`, `STATUS_PROGRESS` | zelfde naam (alleen invullen als je ze in `.env` hebt aangepast) |
+
+4. Push naar `main`, of start de workflow handmatig via **Actions → Dashboard naar GitHub Pages → Run workflow**.
+
+De site staat daarna op `https://<owner>.github.io/<repo>/`. Kan de Action GitHub niet bereiken, dan faalt hij en blijft de vorige versie online staan (er wordt nooit demodata gepubliceerd).
+
 ## GitHub koppelen
 
 1. Zorg dat `gh` rechten heeft om projecten te lezen: `gh auth refresh -s read:project`

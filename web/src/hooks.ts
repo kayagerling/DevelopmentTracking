@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Dashboard } from "./types";
 
+/** Op GitHub Pages is er geen server: dan lezen we de momentopname dashboard.json. */
+export const IS_STATIC = import.meta.env.VITE_STATIC === "true";
+
+function dashboardUrl(force: boolean) {
+  if (IS_STATIC) return `${import.meta.env.BASE_URL}dashboard.json?t=${Date.now()}`;
+  return `/api/dashboard${force ? "?force=1" : ""}`;
+}
+
 /** Haalt het dashboard op en ververst automatisch (live). */
 export function useDashboard() {
   const [data, setData] = useState<Dashboard | null>(null);
@@ -10,7 +18,7 @@ export function useDashboard() {
   const load = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/dashboard${force ? "?force=1" : ""}`);
+      const res = await fetch(dashboardUrl(force), { cache: "no-store" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? res.statusText);
       setData(json);
