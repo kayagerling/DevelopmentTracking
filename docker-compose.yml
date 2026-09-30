@@ -1,0 +1,14 @@
+services:
+  tracker:
+    build: .
+    container_name: development-tracker
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      # Bewaart de versimpelde beschrijvingen tussen herstarts
+      - simplified-cache:/app/server/.cache
+    restart: unless-stopped
+
+volumes:
+  simplified-cache:
