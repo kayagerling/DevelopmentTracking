@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { BranchCard, BranchIcon } from "./components/BranchCard";
 import { GroupCard } from "./components/GroupCard";
 import { PrdCard } from "./components/PrdCard";
@@ -7,30 +7,10 @@ import { ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
 import { WelcomeDialog } from "./components/WelcomeDialog";
 import { haptic } from "./haptics";
-import { IS_STATIC, useDashboard, useTheme } from "./hooks";
+import { IS_STATIC, useChanges, useDashboard, useScrollHint, useTheme } from "./hooks";
 import { StatsPage } from "./pages/Stats";
+import { useRoute, type SortKey, type StatusFilter } from "./route";
 import type { Prd } from "./types";
-
-type Page = "overzicht" | "statistieken";
-const pageFromHash = (): Page => (window.location.hash.startsWith("#/statistieken") ? "statistieken" : "overzicht");
-
-/** Eenvoudige routering via de hash (#/statistieken), werkt ook op GitHub Pages. */
-function usePage() {
-  const [page, setPage] = useState<Page>(pageFromHash);
-  useEffect(() => {
-    const onHash = () => setPage(pageFromHash());
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
-  const go = (p: Page) => {
-    window.location.hash = p === "statistieken" ? "/statistieken" : "";
-    if (p === "overzicht") history.replaceState(null, "", window.location.pathname + window.location.search);
-    setPage(p);
-  };
-  return [page, go] as const;
-}
-
-type StatusFilter = "all" | "todo" | "busy" | "done";
 
 const statusFilters: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Alles" },
@@ -42,30 +22,56 @@ const statusFilters: { value: StatusFilter; label: string }[] = [
 const matchesStatus = (p: Prd, f: StatusFilter) =>
   f === "all" || (f === "todo" ? p.progress === 0 : f === "done" ? p.progress >= 100 : p.progress > 0 && p.progress < 100);
 
+const sortOptions: { value: SortKey; label: string }[] = [
+  { value: "standaard", label: "Standaard" },
+  { value: "nummer", label: "Nummer" },
+  { value: "voortgang", label: "Voortgang" },
+  { value: "bijgewerkt", label: "Laatst bijgewerkt" },
+];
+
+const prdNum = (p: Prd) => Number(p.prdNumber.match(/\d+/)?.[0] ?? 0);
+const sorters: Record<SortKey, ((a: Prd, b: Prd) => number) | null> = {
+  standaard: null,
+  nummer: (a, b) => prdNum(a) - prdNum(b),
+  voortgang: (a, b) => b.progress - a.progress,
+  bijgewerkt: (a, b) => b.updatedAt.localeCompare(a.updatedAt),
+};
+
 export default function App() {
   const { data, error, loading, refresh, manual } = useDashboard();
   const [theme, setTheme] = useTheme();
-  const [page, go] = usePage();
-  const [themeKey, setThemeKey] = useState<string | null>(null);
-  const [personKey, setPersonKey] = useState<string | null>(null);
-  const [status, setStatus] = useState<StatusFilter>("all");
-  const [query, setQuery] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const { route, update, go, openPrd, closePrd } = useRoute();
+  const { page, theme: themeKey, person: personKey, status, query, sort } = route;
+  const { changes, markSeen } = useChanges(data);
+  const sideRef = useScrollHint<HTMLElement>();
+  const mainRef = useScrollHint<HTMLElement>();
 
   const prds = useMemo(() => {
     if (!data) return [];
     const q = query.trim().toLowerCase();
-    return data.prds.filter(
+    const list = data.prds.filter(
       (p) =>
         (!themeKey || p.theme === themeKey) &&
         (!personKey ||
           (personKey === "__none__" ? p.assignees.length === 0 : p.assignees.some((a) => a.login === personKey))) &&
         matchesStatus(p, status) &&
+        (!route.changed || changes.has(p.id)) &&
         (!q || `${p.prdNumber} ${p.title} ${p.simpleDescription} ${(p.branches ?? []).map((b) => b.name).join(" ")}`.toLowerCase().includes(q)),
     );
-  }, [data, themeKey, personKey, status, query]);
+    const by = sorters[sort];
+    return by ? [...list].sort(by) : list;
+  }, [data, themeKey, personKey, status, query, sort, route.changed, changes]);
 
-  const open = data?.prds.find((p) => p.id === openId) ?? null;
+  const open = (route.prd && data?.prds.find((p) => p.prdNumber === route.prd)) || null;
+  const openById = (id: string) => {
+    const p = data?.prds.find((x) => x.id === id);
+    if (p) openPrd(p.prdNumber);
+  };
+  // Na het bekijken (sluiten) telt een PRD niet meer als gewijzigd.
+  useEffect(() => {
+    if (open) return () => markSeen(open.id);
+  }, [open?.id, markSeen]);
+
   const t = data?.totals;
 
   return (
@@ -136,7 +142,7 @@ export default function App() {
 
         {data && t && page === "overzicht" && (
           <div className="layout">
-            <aside className="layout__side">
+            <aside ref={sideRef} className="layout__side">
             <section className="hero card">
               <div className="hero__main">
                 <p className="eyebrow">Totale voortgang</p>
@@ -159,22 +165,33 @@ export default function App() {
             </section>
 
             <div className="grid-2">
-              <GroupCard title="Per thema" groups={data.byTheme} selected={themeKey} onSelect={setThemeKey} />
-              <GroupCard title="Per persoon" groups={data.byPerson} withAvatar selected={personKey} onSelect={setPersonKey} />
+              <GroupCard title="Per thema" groups={data.byTheme} selected={themeKey} onSelect={(k) => update({ theme: k })} />
+              <GroupCard title="Per persoon" groups={data.byPerson} withAvatar selected={personKey} onSelect={(k) => update({ person: k })} />
             </div>
 
-            <BranchCard branches={data.branches ?? []} onOpenPrd={setOpenId} />
+            <BranchCard branches={data.branches ?? []} onOpenPrd={openById} />
             </aside>
 
-            <section className="layout__main">
+            <section ref={mainRef} className="layout__main">
               <div className="list-head">
-                <h2>
-                  Alle PRD's <span className="muted">({prds.length})</span>
-                </h2>
+                <div className="list-head__title">
+                  <h2>
+                    Alle PRD's <span className="muted">({prds.length})</span>
+                  </h2>
+                  {(changes.size > 0 || route.changed) && (
+                    <button
+                      className={`changes-toggle ${route.changed ? "active" : ""}`}
+                      aria-pressed={route.changed}
+                      onClick={() => update({ changed: !route.changed })}
+                    >
+                      {route.changed ? "Toon alle PRD's" : `${changes.size} ${changes.size === 1 ? "wijziging" : "wijzigingen"} sinds je laatste bezoek`}
+                    </button>
+                  )}
+                </div>
                 <div className="filters">
                   <div className="segmented segmented--wide">
                     {statusFilters.map((f) => (
-                      <button key={f.value} className={status === f.value ? "active" : ""} onClick={() => setStatus(f.value)}>
+                      <button key={f.value} className={status === f.value ? "active" : ""} onClick={() => update({ status: f.value })}>
                         {f.label}
                       </button>
                     ))}
@@ -184,15 +201,22 @@ export default function App() {
                     type="search"
                     placeholder="Zoeken…"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => update({ query: e.target.value })}
                   />
+                  <select className="search sort" value={sort} onChange={(e) => update({ sort: e.target.value as SortKey })} aria-label="Sorteren">
+                    {sortOptions.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.value === "standaard" ? "Sorteren" : o.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               {prds.length ? (
                 <div className="prd-grid">
                   {prds.map((p) => (
-                    <PrdCard key={p.id} prd={p} onOpen={() => setOpenId(p.id)} />
+                    <PrdCard key={p.id} prd={p} change={changes.get(p.id)} onOpen={() => openPrd(p.prdNumber)} />
                   ))}
                 </div>
               ) : (
@@ -203,7 +227,7 @@ export default function App() {
         )}
       </main>
 
-      {open && <PrdSheet prd={open} onClose={() => setOpenId(null)} />}
+      {open && <PrdSheet prd={open} onClose={closePrd} />}
       <WelcomeDialog />
     </>
   );

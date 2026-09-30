@@ -3,6 +3,7 @@ import { Avatar } from "../components/Avatar";
 import { BarList, ChartCard, ColumnChart, Legend, LineChart, type BarRow } from "../components/charts";
 import type { Dashboard, Prd } from "../types";
 import { haptic } from "../haptics";
+import { useScrollHint } from "../hooks";
 
 const C = {
   created: "var(--viz-1)",
@@ -43,6 +44,7 @@ function stackRow(key: string, label: BarRow["label"], prds: Prd[]): BarRow {
 }
 
 export function StatsPage({ data, onBack }: { data: Dashboard; onBack: () => void }) {
+  const scrollRef = useScrollHint<HTMLDivElement>();
   const s = useMemo(() => {
     const prds = data.prds;
     const today = startOfDay(new Date());
@@ -141,7 +143,7 @@ export function StatsPage({ data, onBack }: { data: Dashboard; onBack: () => voi
   });
 
   return (
-    <div className="stats-page">
+    <div ref={scrollRef} className="stats-page">
       <div className="stats-page__head">
         <button ref={haptic} className="back" onClick={onBack}>
           <span aria-hidden>‹</span> Overzicht

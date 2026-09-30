@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dashboard } from "./types";
 
 /** Op GitHub Pages is er geen server: dan lezen we de momentopname dashboard.json. */
@@ -88,4 +88,100 @@ export function useTheme() {
   }, [theme]);
 
   return [theme, setTheme] as const;
+}
+
+export type ChangeKind = "nieuw" | "gewijzigd" | "klaar";
+type Snapshot = { savedAt: string; prds: Record<string, { status: string; progress: number }> };
+const SEEN_KEY = "dt-seen";
+
+function readSnapshot(): Snapshot | null {
+  try {
+    const s = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "null");
+    return s && typeof s.prds === "object" ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Welke PRD's zijn nieuw of veranderd sinds je laatste bezoek?
+ * De stand van het vorige bezoek wordt bij het openen één keer gelezen, zodat de
+ * markeringen de hele sessie blijven staan. De huidige stand wordt steeds opgeslagen
+ * voor de volgende keer. Bij het eerste bezoek is er niets om mee te vergelijken.
+ */
+export function useChanges(data: Dashboard | null) {
+  const [base] = useState(readSnapshot);
+  const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
+
+  useEffect(() => {
+    if (!data) return;
+    const snap: Snapshot = {
+      savedAt: data.fetchedAt,
+      prds: Object.fromEntries(data.prds.map((p) => [p.id, { status: p.status, progress: p.progress }])),
+    };
+    try {
+      localStorage.setItem(SEEN_KEY, JSON.stringify(snap));
+    } catch {
+      /* geen opslag beschikbaar */
+    }
+  }, [data]);
+
+  const changes = useMemo(() => {
+    const m = new Map<string, ChangeKind>();
+    if (!data || !base) return m;
+    for (const p of data.prds) {
+      if (seen.has(p.id)) continue;
+      const before = base.prds[p.id];
+      if (!before) m.set(p.id, "nieuw");
+      else if (before.progress < 100 && p.progress >= 100) m.set(p.id, "klaar");
+      else if (before.status !== p.status || before.progress !== p.progress) m.set(p.id, "gewijzigd");
+    }
+    return m;
+  }, [data, base, seen]);
+
+  /** Markering weghalen, bv. nadat je de PRD bekeken hebt. */
+  const markSeen = useCallback((id: string) => setSeen((s) => (s.has(id) ? s : new Set(s).add(id))), []);
+
+  return { changes, markSeen };
+}
+
+/**
+ * Ref voor een scrollend vak: zet data-more-above / data-more-below zodat de CSS
+ * een vervaging kan tonen waar nog meer inhoud zit (er zijn geen scrollbars).
+ */
+export function useScrollHint<T extends HTMLElement>() {
+  const cleanup = useRef<() => void>();
+  return useCallback((el: T | null) => {
+    cleanup.current?.();
+    cleanup.current = undefined;
+    if (!el) return;
+
+    const check = () => {
+      const max = el.scrollHeight - el.clientHeight;
+      el.toggleAttribute("data-more-above", max > 1 && el.scrollTop > 1);
+      el.toggleAttribute("data-more-below", max > 1 && el.scrollTop < max - 1);
+    };
+    const resize = new ResizeObserver(check);
+    const observeChildren = () => {
+      resize.disconnect();
+      resize.observe(el);
+      for (const child of el.children) resize.observe(child);
+    };
+    // Inhoud verandert bij filteren: opnieuw meten.
+    const mutation = new MutationObserver(() => {
+      observeChildren();
+      check();
+    });
+
+    observeChildren();
+    mutation.observe(el, { childList: true, subtree: true });
+    el.addEventListener("scroll", check, { passive: true });
+    check();
+
+    cleanup.current = () => {
+      el.removeEventListener("scroll", check);
+      resize.disconnect();
+      mutation.disconnect();
+    };
+  }, []);
 }

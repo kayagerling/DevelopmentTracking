@@ -6,6 +6,9 @@ Eén overzicht van alle PRD's op het GitHub-scrumboard, begrijpelijk voor iedere
 - **Voortgang** in balken: totaal, **per thema** en **per persoon**. Kleuren: rood (< 25%), oranje (25–99%), groen (100%).
 - **Versimpelde beschrijving** per PRD in gewone taal (met Claude), de technische tekst is uitklapbaar.
 - **Licht / donker / automatisch**, in Apple-stijl, werkt ook op mobiel.
+- **Deelbare links**: filters, zoekterm, sortering en de geopende PRD staan in de URL (bv. `#/?status=busy&prd=PRD-144`). In een PRD staat een knop *Deel link*.
+- **Wijzigingen sinds je laatste bezoek**: nieuwe, gewijzigde en afgeronde PRD's krijgen een label, met een filter om alleen die te tonen (bewaard in je browser).
+- **Installeerbaar als app**: op iPhone via *Deel → Zet op beginscherm*, op Android/desktop via *Installeren* in de browser.
 
 Zonder instellingen draait hij met **voorbeelddata**, zodat je meteen kunt kijken.
 

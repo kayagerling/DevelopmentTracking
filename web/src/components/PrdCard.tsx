@@ -1,5 +1,6 @@
-import type { Prd } from "../types";
 import { haptic } from "../haptics";
+import type { ChangeKind } from "../hooks";
+import type { Prd } from "../types";
 import { AvatarStack } from "./Avatar";
 import { BranchIcon } from "./BranchCard";
 import { ProgressBar, progressTone } from "./ProgressBar";
@@ -8,11 +9,24 @@ export function StatusPill({ prd }: { prd: Prd }) {
   return <span className={`pill tone-${progressTone(prd.progress)}`}>{prd.status}</span>;
 }
 
-export function PrdCard({ prd, onOpen }: { prd: Prd; onOpen: () => void }) {
+const changeLabel: Record<ChangeKind, { text: string; tone: string }> = {
+  nieuw: { text: "Nieuw", tone: "accent" },
+  gewijzigd: { text: "Gewijzigd", tone: "orange" },
+  klaar: { text: "Klaar", tone: "green" },
+};
+
+export function PrdCard({ prd, change, onOpen }: { prd: Prd; change?: ChangeKind; onOpen: () => void }) {
   return (
     <button ref={haptic} className="card prd" onClick={onOpen}>
       <div className="prd__top">
-        <span className="prd__nr">{prd.prdNumber}</span>
+        <span className="prd__id">
+          <span className="prd__nr">{prd.prdNumber}</span>
+          {change && (
+            <span className={`pill pill--change tone-${changeLabel[change].tone}`} title="Sinds je laatste bezoek">
+              {changeLabel[change].text}
+            </span>
+          )}
+        </span>
         <StatusPill prd={prd} />
       </div>
       <h3 className="prd__title">{prd.title}</h3>
