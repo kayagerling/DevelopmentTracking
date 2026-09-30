@@ -420,3 +420,14 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   .tiles .tile { min-width: 0; }
   .tile__value { overflow-wrap: anywhere; }
 }
+
+/* ─────────────  Status-knop: verversen  ───────────── */
+.live { transition: background 0.2s, color 0.2s; }
+.live:hover { background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); color: var(--text); }
+.live:disabled { cursor: progress; }
+.live.is-busy .live__dot { background: transparent; box-shadow: none; border: 2px solid var(--accent); border-right-color: transparent; animation: live-spin 0.7s linear infinite; }
+.live.is-done { color: var(--green); background: color-mix(in srgb, var(--green) 14%, var(--surface-2)); }
+@keyframes live-spin { to { transform: rotate(360deg); } }
+@media (max-width: 560px) {
+  .live.is-busy .small, .live.is-done .small { display: inline; }
+}

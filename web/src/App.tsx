@@ -41,7 +41,7 @@ const matchesStatus = (p: Prd, f: StatusFilter) =>
   f === "all" || (f === "todo" ? p.progress === 0 : f === "done" ? p.progress >= 100 : p.progress > 0 && p.progress < 100);
 
 export default function App() {
-  const { data, error, loading, refresh } = useDashboard();
+  const { data, error, loading, refresh, manual } = useDashboard();
   const [theme, setTheme] = useTheme();
   const [page, go] = usePage();
   const [themeKey, setThemeKey] = useState<string | null>(null);
@@ -89,15 +89,27 @@ export default function App() {
               </button>
             </nav>
             {data && (
-              <button className="live" onClick={refresh} title={IS_STATIC ? "Wordt elke ~15 minuten bijgewerkt" : "Nu verversen"}>
+              <button
+                className={`live ${manual !== "idle" ? `is-${manual}` : ""}`}
+                onClick={refresh}
+                disabled={manual === "busy"}
+                aria-live="polite"
+                title={IS_STATIC ? "Klik om te verversen (de gegevens zelf worden elke ~15 minuten bijgewerkt)" : "Klik om nu te verversen"}
+              >
                 <span className={`live__dot ${loading ? "is-loading" : ""} ${data.source === "demo" ? "is-demo" : ""}`} />
                 <span className="small">
-                  {data.source === "demo" ? "Demo" : IS_STATIC ? "Bijgewerkt" : "Live"} ·{" "}
-                  {new Date(data.fetchedAt).toLocaleString("nl-NL", {
-                    ...(new Date(data.fetchedAt).toDateString() === new Date().toDateString() ? {} : { day: "numeric", month: "short" }),
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {manual === "busy"
+                    ? "Verversen…"
+                    : manual === "done"
+                      ? "Ververst ✓"
+                      : <>
+                          {data.source === "demo" ? "Demo" : IS_STATIC ? "Bijgewerkt" : "Live"} ·{" "}
+                          {new Date(data.fetchedAt).toLocaleString("nl-NL", {
+                            ...(new Date(data.fetchedAt).toDateString() === new Date().toDateString() ? {} : { day: "numeric", month: "short" }),
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </>}
                 </span>
               </button>
             )}

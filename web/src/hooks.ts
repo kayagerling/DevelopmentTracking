@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dashboard } from "./types";
 
 /** Op GitHub Pages is er geen server: dan lezen we de momentopname dashboard.json. */
@@ -45,7 +45,23 @@ export function useDashboard() {
     };
   }, [load, refreshSeconds]);
 
-  return { data, error, loading, refresh: () => load(true) };
+  // Handmatig verversen (klik op de status): hetzelfde ophalen als automatisch,
+  // maar lang genoeg zichtbaar zodat je ziet dát er ververst is.
+  const [manual, setManual] = useState<"idle" | "busy" | "done">("idle");
+  const doneTimer = useRef<number>();
+  const refresh = useCallback(async () => {
+    if (manual === "busy") return;
+    window.clearTimeout(doneTimer.current);
+    setManual("busy");
+    const started = Date.now();
+    await load(true);
+    await new Promise((r) => setTimeout(r, Math.max(0, 700 - (Date.now() - started))));
+    setManual("done");
+    doneTimer.current = window.setTimeout(() => setManual("idle"), 1800);
+  }, [load, manual]);
+  useEffect(() => () => window.clearTimeout(doneTimer.current), []);
+
+  return { data, error, loading, refresh, manual };
 }
 
 export type ThemeChoice = "system" | "light" | "dark";
