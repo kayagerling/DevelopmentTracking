@@ -32,7 +32,7 @@ export function PrdSheet({ prd, onClose }: { prd: Prd; onClose: () => void }) {
         <h2 className="sheet__title">{prd.title}</h2>
 
         <div className="sheet__progress">
-          <ProgressBar value={prd.progress} size="lg" label={`${prd.progress}%`} />
+          <ProgressBar value={prd.progress} size="lg" label={`${prd.progress}%`} confettiKey={`sheet-${prd.id}`} />
           <strong className="pct">{prd.progress}%</strong>
         </div>
 

@@ -40,7 +40,7 @@ export function GroupCard({ title, groups, withAvatar, selected, onSelect }: Pro
                   <strong className="pct">{g.progress}%</strong>
                 </span>
               </div>
-              <ProgressBar value={g.progress} label={`${g.label}: ${g.progress}%`} />
+              <ProgressBar value={g.progress} label={`${g.label}: ${g.progress}%`} confettiKey={`${title}-${g.key}`} />
             </button>
           </li>
         ))}

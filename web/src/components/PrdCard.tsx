@@ -18,7 +18,7 @@ export function PrdCard({ prd, onOpen }: { prd: Prd; onOpen: () => void }) {
       <p className="prd__desc">{prd.simpleDescription}</p>
       <div className="prd__bottom">
         <div className="prd__progress">
-          <ProgressBar value={prd.progress} size="sm" label={`${prd.title}: ${prd.progress}%`} />
+          <ProgressBar value={prd.progress} size="sm" label={`${prd.title}: ${prd.progress}%`} confettiKey={`card-${prd.id}`} />
           <strong className="pct small">{prd.progress}%</strong>
         </div>
         <div className="prd__foot">
