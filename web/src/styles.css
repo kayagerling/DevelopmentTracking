@@ -58,6 +58,11 @@
 
 /* ─────────────  Basis  ───────────── */
 * { box-sizing: border-box; }
+/* Desktop: geen zichtbare scrollbars, scrollen blijft werken. */
+@media (hover: hover) and (pointer: fine) {
+  * { scrollbar-width: none; }
+  *::-webkit-scrollbar { display: none; }
+}
 html, body { margin: 0; }
 body {
   background: var(--bg);
@@ -249,7 +254,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   .layout__side, .layout__main {
     min-height: 0; overflow-y: auto; overscroll-behavior: contain;
     padding-bottom: 24px;
-    scrollbar-width: thin;
+   
   }
   .layout__side { gap: 16px; padding-right: 4px; }
   .layout__side .grid-2 { grid-template-columns: 1fr; gap: 16px; }
@@ -395,7 +400,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 .viz-table td:not(:first-child), .viz-table th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
 
 @media (min-width: 1100px) {
-  .stats-page { min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 0 4px 24px 0; scrollbar-width: thin; }
+  .stats-page { min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 0 4px 24px 0; }
 }
 @media (max-width: 860px) {
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
