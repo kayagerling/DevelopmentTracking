@@ -5,6 +5,7 @@ import { PrdCard } from "./components/PrdCard";
 import { PrdSheet } from "./components/PrdSheet";
 import { ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
+import { WeekCard } from "./components/WeekCard";
 import { WelcomeDialog } from "./components/WelcomeDialog";
 import { haptic } from "./haptics";
 import { IS_STATIC, useChanges, useDashboard, useScrollHint, useTheme } from "./hooks";
@@ -163,6 +164,8 @@ export default function App() {
                 </span>
               </p>
             </section>
+
+            <WeekCard prds={data.prds} onOpenPrd={openById} />
 
             <div className="grid-2">
               <GroupCard title="Per thema" groups={data.byTheme} selected={themeKey} onSelect={(k) => update({ theme: k })} />
