@@ -183,7 +183,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 .people { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 .person { display: inline-flex; align-items: center; gap: 6px; }
 .tech { margin: 0; white-space: pre-wrap; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; background: var(--surface-2); border-radius: 12px; padding: 14px; color: var(--muted); max-height: 300px; overflow: auto; }
-.button { justify-self: start; display: inline-flex; align-items: center; gap: 8px;background: var(--accent); color: #fff; text-decoration: none; padding: 9px 18px; border-radius: 999px; font-weight: 500; font-size: 14px; }
+.button { justify-self: start; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: #fff; text-decoration: none; padding: 9px 18px; border-radius: 999px; font-weight: 500; font-size: 14px; }
 .button:hover { filter: brightness(1.08); }
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
