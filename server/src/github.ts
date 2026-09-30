@@ -12,6 +12,8 @@ export interface RawPrd {
   closed: boolean;
   body: string;
   updatedAt: string;
+  createdAt: string;
+  closedAt: string | null;
   assignees: { login: string; name: string | null; avatarUrl: string }[];
   /** Branches die op GitHub expliciet aan het issue gekoppeld zijn (blok "Development"). */
   linkedBranches: string[];
@@ -47,7 +49,7 @@ query($owner: String!, $number: Int!, $cursor: String) {
           content {
             __typename
             ... on Issue {
-              number title body url state updatedAt
+              number title body url state updatedAt createdAt closedAt
               repository { nameWithOwner }
               assignees(first: 10) { nodes { login name avatarUrl } }
               labels(first: 20) { nodes { name } }
@@ -80,6 +82,8 @@ interface ItemNode {
     url?: string;
     state?: string;
     updatedAt?: string;
+    createdAt?: string;
+    closedAt?: string | null;
     repository?: { nameWithOwner: string };
     assignees?: { nodes: { login: string; name: string | null; avatarUrl: string }[] };
     labels?: { nodes: { name: string }[] };
@@ -158,6 +162,8 @@ export async function fetchPrds(): Promise<{ projectTitle: string; prds: RawPrd[
         closed: c.state === "CLOSED",
         body: c.body ?? "",
         updatedAt: c.updatedAt ?? "",
+        createdAt: c.createdAt ?? "",
+        closedAt: c.closedAt ?? null,
         assignees: c.assignees?.nodes ?? [],
         linkedBranches: (c.linkedBranches?.nodes ?? []).flatMap((b) => (b.ref ? [b.ref.name] : [])),
       });

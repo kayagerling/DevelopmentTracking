@@ -62,6 +62,8 @@ export function demoPrds(): { projectTitle: string; prds: RawPrd[]; branches: Ra
       closed: status === "Done",
       body,
       updatedAt: new Date(now - i * 36e5 * 7).toISOString(),
+      createdAt: new Date(now - (30 - i) * 864e5).toISOString(),
+      closedAt: status === "Done" ? new Date(now - (20 - i * 2) * 864e5).toISOString() : null,
       assignees: who.map((k) => people[k]),
       linkedBranches: [],
     })),

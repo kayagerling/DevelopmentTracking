@@ -25,6 +25,8 @@ function toPrd(raw: RawPrd): Prd {
     simpleDescription: simple.text,
     simpleSource: simple.source,
     updatedAt: raw.updatedAt,
+    createdAt: raw.createdAt,
+    closedAt: raw.closedAt,
     branches: [],
   };
 }

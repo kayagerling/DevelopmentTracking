@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BranchCard, BranchIcon } from "./components/BranchCard";
 import { GroupCard } from "./components/GroupCard";
 import { PrdCard } from "./components/PrdCard";
@@ -6,7 +6,27 @@ import { PrdSheet } from "./components/PrdSheet";
 import { ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
 import { IS_STATIC, useDashboard, useTheme } from "./hooks";
+import { StatsPage } from "./pages/Stats";
 import type { Prd } from "./types";
+
+type Page = "overzicht" | "statistieken";
+const pageFromHash = (): Page => (window.location.hash.startsWith("#/statistieken") ? "statistieken" : "overzicht");
+
+/** Eenvoudige routering via de hash (#/statistieken), werkt ook op GitHub Pages. */
+function usePage() {
+  const [page, setPage] = useState<Page>(pageFromHash);
+  useEffect(() => {
+    const onHash = () => setPage(pageFromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  const go = (p: Page) => {
+    window.location.hash = p === "statistieken" ? "/statistieken" : "";
+    if (p === "overzicht") history.replaceState(null, "", window.location.pathname + window.location.search);
+    setPage(p);
+  };
+  return [page, go] as const;
+}
 
 type StatusFilter = "all" | "todo" | "busy" | "done";
 
@@ -23,6 +43,7 @@ const matchesStatus = (p: Prd, f: StatusFilter) =>
 export default function App() {
   const { data, error, loading, refresh } = useDashboard();
   const [theme, setTheme] = useTheme();
+  const [page, go] = usePage();
   const [themeKey, setThemeKey] = useState<string | null>(null);
   const [personKey, setPersonKey] = useState<string | null>(null);
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -59,6 +80,14 @@ export default function App() {
             </div>
           </div>
           <div className="topbar__actions">
+            <nav className="segmented nav" aria-label="Pagina">
+              <button className={page === "overzicht" ? "active" : ""} aria-current={page === "overzicht" ? "page" : undefined} onClick={() => go("overzicht")}>
+                Overzicht
+              </button>
+              <button className={page === "statistieken" ? "active" : ""} aria-current={page === "statistieken" ? "page" : undefined} onClick={() => go("statistieken")}>
+                Statistieken
+              </button>
+            </nav>
             {data && (
               <button className="live" onClick={refresh} title={IS_STATIC ? "Wordt elke ~15 minuten bijgewerkt" : "Nu verversen"}>
                 <span className={`live__dot ${loading ? "is-loading" : ""} ${data.source === "demo" ? "is-demo" : ""}`} />
@@ -89,7 +118,9 @@ export default function App() {
 
         {!data && !error && <div className="skeleton" />}
 
-        {data && t && (
+        {data && page === "statistieken" && <StatsPage data={data} onBack={() => go("overzicht")} />}
+
+        {data && t && page === "overzicht" && (
           <div className="layout">
             <aside className="layout__side">
             <section className="hero card">

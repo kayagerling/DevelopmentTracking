@@ -27,6 +27,8 @@ export interface Prd {
   simpleDescription: string; // versimpelde uitleg
   simpleSource: "ai" | "samenvatting";
   updatedAt: string;
+  createdAt: string;
+  closedAt: string | null; // moment dat het issue gesloten is
   branches: Branch[];
 }
 
