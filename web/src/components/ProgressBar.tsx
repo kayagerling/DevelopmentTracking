@@ -9,13 +9,15 @@ interface Props {
   value: number;
   size?: "sm" | "md" | "lg";
   label?: string;
+  /** Lichtglans die door het gevulde deel beweegt (verandert het percentage niet). */
+  animated?: boolean;
 }
 
-export function ProgressBar({ value, size = "md", label }: Props) {
+export function ProgressBar({ value, size = "md", label, animated = false }: Props) {
   const pct = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div
-      className={`bar bar--${size} tone-${progressTone(pct)}`}
+      className={`bar bar--${size} tone-${progressTone(pct)} ${animated && pct < 100 ? "bar--active" : ""}`}
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}

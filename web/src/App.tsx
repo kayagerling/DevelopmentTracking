@@ -85,12 +85,13 @@ export default function App() {
         {!data && !error && <div className="skeleton" />}
 
         {data && t && (
-          <>
+          <div className="layout">
+            <aside className="layout__side">
             <section className="hero card">
               <div className="hero__main">
                 <p className="eyebrow">Totale voortgang</p>
                 <div className="hero__pct">{t.progress}%</div>
-                <ProgressBar value={t.progress} size="lg" label="Totale voortgang" />
+                <ProgressBar value={t.progress} size="lg" label="Totale voortgang" animated />
               </div>
               <div className="stats">
                 <Stat label="PRD's" value={t.count} />
@@ -104,8 +105,9 @@ export default function App() {
               <GroupCard title="Per thema" groups={data.byTheme} selected={themeKey} onSelect={setThemeKey} />
               <GroupCard title="Per persoon" groups={data.byPerson} withAvatar selected={personKey} onSelect={setPersonKey} />
             </div>
+            </aside>
 
-            <section>
+            <section className="layout__main">
               <div className="list-head">
                 <h2>
                   Alle PRD's <span className="muted">({prds.length})</span>
@@ -138,7 +140,7 @@ export default function App() {
                 <p className="empty muted">Geen PRD's gevonden met deze filters.</p>
               )}
             </section>
-          </>
+          </div>
         )}
       </main>
 
