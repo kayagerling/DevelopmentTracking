@@ -5,6 +5,15 @@ export interface Person {
   avatarUrl: string;
 }
 
+export interface Branch {
+  name: string;
+  url: string;
+  repository: string;
+  lastCommitAt: string;
+  prdId: string | null; // PRD waar deze branch bij hoort (null = geen PRD gevonden)
+  prdNumber: string | null;
+}
+
 export interface Prd {
   id: string;
   prdNumber: string; // bv. "PRD-144"
@@ -19,6 +28,7 @@ export interface Prd {
   simpleDescription: string; // versimpelde uitleg
   simpleSource: "ai" | "samenvatting";
   updatedAt: string;
+  branches: Branch[];
 }
 
 export interface GroupProgress {
@@ -41,9 +51,12 @@ export interface Dashboard {
     inProgress: number;
     notStarted: number;
     progress: number;
+    branches: number;
+    branchesWithPrd: number;
   };
   byTheme: GroupProgress[];
   byPerson: GroupProgress[];
   prds: Prd[];
+  branches: Branch[];
   error?: string;
 }

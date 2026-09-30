@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Prd } from "../types";
 import { Avatar } from "./Avatar";
+import { BranchIcon } from "./BranchCard";
 import { StatusPill } from "./PrdCard";
 import { ProgressBar } from "./ProgressBar";
 
@@ -53,6 +54,19 @@ export function PrdSheet({ prd, onClose }: { prd: Prd; onClose: () => void }) {
                     </span>
                   ))
                 : "Nog niemand"}
+            </dd>
+          </div>
+          <div>
+            <dt>Branches</dt>
+            <dd className="sheet__branches">
+              {prd.branches?.length
+                ? prd.branches.map((b) => (
+                    <a key={`${b.repository}#${b.name}`} className="branch__name" href={b.url} target="_blank" rel="noreferrer" title={b.name}>
+                      <BranchIcon />
+                      <span>{b.name}</span>
+                    </a>
+                  ))
+                : "Nog geen branch"}
             </dd>
           </div>
           <div>

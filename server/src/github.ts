@@ -13,6 +13,15 @@ export interface RawPrd {
   body: string;
   updatedAt: string;
   assignees: { login: string; name: string | null; avatarUrl: string }[];
+  /** Branches die op GitHub expliciet aan het issue gekoppeld zijn (blok "Development"). */
+  linkedBranches: string[];
+}
+
+/** Ruwe branch uit een repository. */
+export interface RawBranch {
+  name: string;
+  repository: string;
+  lastCommitAt: string;
 }
 
 const FIELD_FRAGMENT = `field { ... on ProjectV2FieldCommon { name } }`;
@@ -42,6 +51,7 @@ query($owner: String!, $number: Int!, $cursor: String) {
               repository { nameWithOwner }
               assignees(first: 10) { nodes { login name avatarUrl } }
               labels(first: 20) { nodes { name } }
+              linkedBranches(first: 10) { nodes { ref { name } } }
             }
           }
         }
@@ -73,6 +83,7 @@ interface ItemNode {
     repository?: { nameWithOwner: string };
     assignees?: { nodes: { login: string; name: string | null; avatarUrl: string }[] };
     labels?: { nodes: { name: string }[] };
+    linkedBranches?: { nodes: { ref: { name: string } | null }[] };
   } | null;
 }
 
@@ -148,10 +159,51 @@ export async function fetchPrds(): Promise<{ projectTitle: string; prds: RawPrd[
         body: c.body ?? "",
         updatedAt: c.updatedAt ?? "",
         assignees: c.assignees?.nodes ?? [],
+        linkedBranches: (c.linkedBranches?.nodes ?? []).flatMap((b) => (b.ref ? [b.ref.name] : [])),
       });
     }
     cursor = project.items.pageInfo.hasNextPage ? project.items.pageInfo.endCursor : null;
   } while (cursor);
 
   return { projectTitle, prds };
+}
+
+const BRANCH_QUERY = `
+query($owner: String!, $name: String!, $cursor: String) {
+  repository(owner: $owner, name: $name) {
+    defaultBranchRef { name }
+    refs(refPrefix: "refs/heads/", first: 100, after: $cursor) {
+      pageInfo { hasNextPage endCursor }
+      nodes { name target { ... on Commit { committedDate } } }
+    }
+  }
+}`;
+
+/** Alle branches van de opgegeven repositories, zonder de hoofdbranch (bv. main). */
+export async function fetchBranches(repositories: string[]): Promise<RawBranch[]> {
+  const branches: RawBranch[] = [];
+  for (const repository of repositories) {
+    const [owner, name] = repository.split("/");
+    let cursor: string | null = null;
+    do {
+      type Resp = {
+        repository: {
+          defaultBranchRef: { name: string } | null;
+          refs: {
+            pageInfo: { hasNextPage: boolean; endCursor: string };
+            nodes: { name: string; target: { committedDate?: string } | null }[];
+          };
+        } | null;
+      };
+      const data: Resp = await graphql<Resp>(BRANCH_QUERY, { owner, name, cursor });
+      const repo = data.repository;
+      if (!repo) break;
+      for (const ref of repo.refs.nodes) {
+        if (ref.name === repo.defaultBranchRef?.name) continue;
+        branches.push({ name: ref.name, repository, lastCommitAt: ref.target?.committedDate ?? "" });
+      }
+      cursor = repo.refs.pageInfo.hasNextPage ? repo.refs.pageInfo.endCursor : null;
+    } while (cursor);
+  }
+  return branches;
 }

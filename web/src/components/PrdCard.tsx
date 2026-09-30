@@ -1,5 +1,6 @@
 import type { Prd } from "../types";
 import { AvatarStack } from "./Avatar";
+import { BranchIcon } from "./BranchCard";
 import { ProgressBar, progressTone } from "./ProgressBar";
 
 export function StatusPill({ prd }: { prd: Prd }) {
@@ -21,7 +22,14 @@ export function PrdCard({ prd, onOpen }: { prd: Prd; onOpen: () => void }) {
           <strong className="pct small">{prd.progress}%</strong>
         </div>
         <div className="prd__foot">
-          <span className="tag">{prd.theme}</span>
+          <span className="prd__tags">
+            <span className="tag">{prd.theme}</span>
+            {prd.branches?.length > 0 && (
+              <span className="tag tag--branch" title={prd.branches.map((b) => b.name).join("\n")}>
+                <BranchIcon size={12} /> {prd.branches.length}
+              </span>
+            )}
+          </span>
           <AvatarStack people={prd.assignees} />
         </div>
       </div>

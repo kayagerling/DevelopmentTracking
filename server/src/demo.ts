@@ -1,4 +1,4 @@
-import type { RawPrd } from "./github.js";
+import type { RawBranch, RawPrd } from "./github.js";
 
 /** Voorbeelddata zodat het dashboard werkt voordat GitHub gekoppeld is. */
 const people = {
@@ -33,9 +33,23 @@ const seeds: Seed[] = [
     "## Doel\nService worker met IndexedDB-sync en conflict resolution (last-write-wins)."],
 ];
 
-export function demoPrds(): { projectTitle: string; prds: RawPrd[] } {
+const branchSeeds = [
+  "SV-prd-112-rolgebaseerde-toegang",
+  "NB-prd-124-dashboard-maandcijfers",
+  "KG-prd-144-foutenregister",
+  "KG-prd-144-metrics",
+  "LJ-prd-156-snellere-laadtijd",
+  "fix/login-timeout",
+];
+
+export function demoPrds(): { projectTitle: string; prds: RawPrd[]; branches: RawBranch[] } {
   const now = Date.now();
   return {
+    branches: branchSeeds.map((name, i) => ({
+      name,
+      repository: "voorbeeld/repo",
+      lastCommitAt: new Date(now - i * 36e5 * 5).toISOString(),
+    })),
     projectTitle: "Voorbeeldproject (demo)",
     prds: seeds.map(([nr, title, theme, status, who, body], i) => ({
       id: `demo-${nr}`,
@@ -49,6 +63,7 @@ export function demoPrds(): { projectTitle: string; prds: RawPrd[] } {
       body,
       updatedAt: new Date(now - i * 36e5 * 7).toISOString(),
       assignees: who.map((k) => people[k]),
+      linkedBranches: [],
     })),
   };
 }

@@ -304,3 +304,26 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   0%, 100% { opacity: 0; }
   35% { opacity: 1; }
 }
+
+/* ─────────────  Branches  ───────────── */
+.branch-icon { flex: none; }
+.hero__branches { grid-column: 1 / -1; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--text); }
+.hero__branches .branch-icon { color: var(--muted); }
+.branches { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 2px; }
+.branch { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.branch:last-child { border-bottom: 0; }
+.branch__name { min-width: 0; display: inline-flex; align-items: center; gap: 6px; color: var(--text); text-decoration: none; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; }
+.branch__name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.branch__name .branch-icon { color: var(--muted); }
+.branch__name:hover span { color: var(--accent); text-decoration: underline; }
+.branch .tag { flex: none; }
+.tag--link { color: var(--accent); }
+.tag--link:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.tag--branch { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.prd__tags { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.facts .sheet__branches { min-width: 0; display: grid; gap: 4px; justify-items: end; }
+.sheet__branches .branch__name { max-width: 100%; }
+/* Lange branchnamen mogen de kolom niet breder maken: ze worden afgekapt met "…". */
+.layout__side, .layout__main { grid-template-columns: minmax(0, 1fr); }
+.layout__side > *, .branch, .facts div { min-width: 0; }
+.branch__name { flex: 1 1 auto; }

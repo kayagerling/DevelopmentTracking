@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { BranchCard, BranchIcon } from "./components/BranchCard";
 import { GroupCard } from "./components/GroupCard";
 import { PrdCard } from "./components/PrdCard";
 import { PrdSheet } from "./components/PrdSheet";
@@ -37,7 +38,7 @@ export default function App() {
         (!personKey ||
           (personKey === "__none__" ? p.assignees.length === 0 : p.assignees.some((a) => a.login === personKey))) &&
         matchesStatus(p, status) &&
-        (!q || `${p.prdNumber} ${p.title} ${p.simpleDescription}`.toLowerCase().includes(q)),
+        (!q || `${p.prdNumber} ${p.title} ${p.simpleDescription} ${(p.branches ?? []).map((b) => b.name).join(" ")}`.toLowerCase().includes(q)),
     );
   }, [data, themeKey, personKey, status, query]);
 
@@ -103,12 +104,21 @@ export default function App() {
                 <Stat label="Bezig" value={t.inProgress} tone="orange" />
                 <Stat label="Nog niet gestart" value={t.notStarted} tone="red" />
               </div>
+              <p className="hero__branches small">
+                <BranchIcon />
+                <span>
+                  <strong>{t.branches}</strong> {t.branches === 1 ? "branch" : "branches"}
+                  <span className="muted"> · {t.branchesWithPrd} bij een PRD</span>
+                </span>
+              </p>
             </section>
 
             <div className="grid-2">
               <GroupCard title="Per thema" groups={data.byTheme} selected={themeKey} onSelect={setThemeKey} />
               <GroupCard title="Per persoon" groups={data.byPerson} withAvatar selected={personKey} onSelect={setPersonKey} />
             </div>
+
+            <BranchCard branches={data.branches ?? []} onOpenPrd={setOpenId} />
             </aside>
 
             <section className="layout__main">

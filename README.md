@@ -69,6 +69,8 @@ De site staat daarna op `https://<owner>.github.io/<repo>/`. Kan de Action GitHu
 - Anders het percentage van de kolom (`STATUS_PROGRESS` in `.env`, bv. *In progress* = 50%).
 - Staan er taken (`- [x]`) in de PRD, dan telt het hoogste van de twee (max. 95% zolang hij niet op *Done* staat).
 
+**Branches**: alle branches van de repo('s) van de PRD's, behalve de hoofdbranch (`main`). Een branch hoort bij een PRD als hij op GitHub aan het issue gekoppeld is (blok *Development*), of anders als de naam het PRD-nummer bevat, bv. `MF-prd-160-dode-subsystemen-opruimen`. Branches zonder PRD-nummer staan als *Geen PRD* in het overzicht.
+
 Thema- en persoonsbalken zijn het gemiddelde van hun PRD's. Een PRD met twee personen telt bij allebei mee.
 
 ## Beschrijvingen versimpelen

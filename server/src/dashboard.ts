@@ -1,9 +1,9 @@
 import { config, githubConfigured } from "./config.js";
 import { demoPrds } from "./demo.js";
-import { fetchPrds, type RawPrd } from "./github.js";
+import { fetchBranches, fetchPrds, type RawBranch, type RawPrd } from "./github.js";
 import { prdProgress } from "./progress.js";
 import { simplify } from "./simplify.js";
-import type { Dashboard, GroupProgress, Person, Prd } from "./types.js";
+import type { Branch, Dashboard, GroupProgress, Person, Prd } from "./types.js";
 
 function toPrd(raw: RawPrd): Prd {
   const simple = simplify(raw.id, raw.title, raw.body);
@@ -25,7 +25,38 @@ function toPrd(raw: RawPrd): Prd {
     simpleDescription: simple.text,
     simpleSource: simple.source,
     updatedAt: raw.updatedAt,
+    branches: [],
   };
+}
+
+const branchUrl = (b: RawBranch) =>
+  `https://github.com/${b.repository}/tree/${b.name.split("/").map(encodeURIComponent).join("/")}`;
+
+/**
+ * Koppelt elke branch aan een PRD: eerst via de koppeling op het issue (blok "Development"),
+ * anders via "prd-144" in de branchnaam.
+ */
+function linkBranches(rawBranches: RawBranch[], rawPrds: RawPrd[], prds: Prd[]): Branch[] {
+  const byNumber = new Map(prds.map((p) => [p.prdNumber, p]));
+  const byLinked = new Map<string, Prd>();
+  rawPrds.forEach((raw, i) => raw.linkedBranches.forEach((name) => byLinked.set(`${raw.repository}#${name}`, prds[i])));
+
+  return rawBranches
+    .map((b) => {
+      const nr = b.name.match(/prd[-_ ]?(\d+)/i)?.[1];
+      const prd = byLinked.get(`${b.repository}#${b.name}`) ?? (nr ? byNumber.get(`PRD-${Number(nr)}`) : undefined);
+      const branch: Branch = {
+        name: b.name,
+        url: branchUrl(b),
+        repository: b.repository,
+        lastCommitAt: b.lastCommitAt,
+        prdId: prd?.id ?? null,
+        prdNumber: prd?.prdNumber ?? null,
+      };
+      prd?.branches.push(branch);
+      return branch;
+    })
+    .sort((a, b) => b.lastCommitAt.localeCompare(a.lastCommitAt));
 }
 
 function group(prds: Prd[], keysOf: (p: Prd) => { key: string; label: string; avatarUrl?: string }[]): GroupProgress[] {
@@ -55,7 +86,9 @@ async function build(): Promise<Dashboard> {
 
   if (githubConfigured) {
     try {
-      data = await fetchPrds();
+      const fetched = await fetchPrds();
+      const repos = [...new Set(fetched.prds.map((p) => p.repository).filter(Boolean))];
+      data = { ...fetched, branches: await fetchBranches(repos) };
       source = "github";
     } catch (err) {
       error = (err as Error).message;
@@ -65,7 +98,9 @@ async function build(): Promise<Dashboard> {
     }
   }
 
-  const prds = data.prds.map(toPrd).sort((a, b) =>
+  const unsorted = data.prds.map(toPrd);
+  const branches = linkBranches(data.branches, data.prds, unsorted);
+  const prds = unsorted.sort((a, b) =>
     a.theme.localeCompare(b.theme) || Number(a.prdNumber.slice(4)) - Number(b.prdNumber.slice(4)),
   );
   const done = prds.filter((p) => p.progress >= 100).length;
@@ -82,6 +117,8 @@ async function build(): Promise<Dashboard> {
       notStarted,
       inProgress: prds.length - done - notStarted,
       progress: prds.length ? Math.round(prds.reduce((s, p) => s + p.progress, 0) / prds.length) : 0,
+      branches: branches.length,
+      branchesWithPrd: branches.filter((b) => b.prdId).length,
     },
     byTheme: group(prds, (p) => [{ key: p.theme, label: p.theme }]),
     byPerson: group(prds, (p) =>
@@ -90,6 +127,7 @@ async function build(): Promise<Dashboard> {
         : [{ key: "__none__", label: "Niet toegewezen" }],
     ),
     prds,
+    branches,
     error,
   };
 }
