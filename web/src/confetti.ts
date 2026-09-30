@@ -35,6 +35,18 @@ let raf = 0;
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let dpr = 1;
+let paused = false;
+let pauseEndedAt = 0;
+
+/** Pauzeer de wachtrij (bv. zolang er een venster over de pagina ligt). */
+export function setConfettiPaused(value: boolean) {
+  if (paused === value) return;
+  paused = value;
+  if (!value) {
+    pauseEndedAt = performance.now();
+    if (queue.length && timer === undefined) pump();
+  }
+}
 
 function ensureCanvas() {
   if (canvas) return;
@@ -112,8 +124,9 @@ function tick() {
 
 function pump() {
   timer = undefined;
+  if (paused) return; // setConfettiPaused(false) start de wachtrij weer
   const now = performance.now();
-  const wait = Math.max(readyAt, nextAt) - now;
+  const wait = Math.max(readyAt, nextAt, pauseEndedAt ? pauseEndedAt + 350 : 0) - now;
   if (wait > 0) {
     timer = window.setTimeout(pump, wait);
     return;

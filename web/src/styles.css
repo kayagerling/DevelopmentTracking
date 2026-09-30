@@ -431,3 +431,31 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 @media (max-width: 560px) {
   .live.is-busy .small, .live.is-done .small { display: inline; }
 }
+
+/* ─────────────  Welkomstvenster  ───────────── */
+.welcome-backdrop { z-index: 70; }
+.welcome {
+  width: min(440px, 100%);
+  background: var(--surface-solid);
+  border-radius: 24px;
+  padding: 32px 30px 26px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+  display: grid; justify-items: center; text-align: center; gap: 12px;
+  animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.welcome__logo { width: 52px; height: 52px; border-radius: 14px; padding: 0 12px; gap: 4px; margin-bottom: 4px; }
+.welcome__logo i { height: 4px; }
+.welcome__title { font-size: 28px; font-weight: 700; }
+.welcome__text { margin: 0; font-size: 16px; line-height: 1.55; color: var(--text); }
+.welcome__note { margin: 0; width: 100%; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45; background: color-mix(in srgb, var(--orange) 14%, transparent); }
+.welcome__check { display: inline-flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; }
+.welcome__check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.welcome__button { justify-self: stretch; margin-top: 6px; padding: 12px 18px; font-size: 16px; text-align: center; border: 0; cursor: pointer; }
+@media (max-width: 560px) {
+  .welcome-backdrop { place-items: end center; padding: 12px; }
+  .welcome { padding: 28px 22px 20px; border-radius: 22px; animation-name: welcome-up; }
+  .welcome__title { font-size: 24px; }
+  .welcome__text { font-size: 15px; }
+  .welcome__check { padding: 6px 0; }
+}
+@keyframes welcome-up { from { opacity: 0; transform: translateY(40px); } }

@@ -5,6 +5,7 @@ import { PrdCard } from "./components/PrdCard";
 import { PrdSheet } from "./components/PrdSheet";
 import { ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
+import { WelcomeDialog } from "./components/WelcomeDialog";
 import { IS_STATIC, useDashboard, useTheme } from "./hooks";
 import { StatsPage } from "./pages/Stats";
 import type { Prd } from "./types";
@@ -202,6 +203,7 @@ export default function App() {
       </main>
 
       {open && <PrdSheet prd={open} onClose={() => setOpenId(null)} />}
+      <WelcomeDialog />
     </>
   );
 }
