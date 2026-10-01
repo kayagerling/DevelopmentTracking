@@ -3,7 +3,7 @@ import type { Prd } from "../types";
 import { Avatar } from "./Avatar";
 import { BranchIcon } from "./BranchCard";
 import { StatusPill } from "./PrdCard";
-import { ProgressBar } from "./ProgressBar";
+import { Pct, ProgressBar } from "./ProgressBar";
 
 /** Detailvenster van één PRD, met de technische tekst standaard ingeklapt. */
 export function PrdSheet({ prd, onClose }: { prd: Prd; onClose: () => void }) {
@@ -53,7 +53,7 @@ export function PrdSheet({ prd, onClose }: { prd: Prd; onClose: () => void }) {
 
         <div className="sheet__progress">
           <ProgressBar value={prd.progress} size="lg" label={`${prd.progress}%`} confettiKey={`sheet-${prd.id}`} />
-          <strong className="pct">{prd.progress}%</strong>
+          <strong className="pct"><Pct value={prd.progress} /></strong>
         </div>
 
         <h4 className="eyebrow">Waar gaat dit over?</h4>

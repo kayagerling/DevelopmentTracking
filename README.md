@@ -3,7 +3,7 @@
 Eén overzicht van alle PRD's op het GitHub-scrumboard, begrijpelijk voor iedereen, ook zonder technische kennis.
 
 - **Live**: haalt het scrumboard (GitHub Project) op via de GitHub API en ververst elke minuut.
-- **Voortgang** in balken: totaal, **per thema** en **per persoon**. Kleuren: rood (< 25%), oranje (25–99%), groen (100%).
+- **Voortgang** in balken: totaal, **per thema** en **per persoon**. Kleuren: rood (< 20%), geel (20–49%), van geel naar groen (50–79%), groen (80–100%, met ✓ bij 100%).
 - **Versimpelde beschrijving** per PRD in gewone taal (met Claude), de technische tekst is uitklapbaar.
 - **Licht / donker / automatisch**, in Apple-stijl, werkt ook op mobiel.
 - **Deelbare links**: filters, zoekterm, sortering en de geopende PRD staan in de URL (bv. `#/?status=busy&prd=PRD-144`). In een PRD staat een knop *Deel link*.

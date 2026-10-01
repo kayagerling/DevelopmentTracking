@@ -3,7 +3,7 @@ import type { ChangeKind } from "../hooks";
 import type { Prd } from "../types";
 import { AvatarStack } from "./Avatar";
 import { BranchIcon } from "./BranchCard";
-import { ProgressBar, progressTone } from "./ProgressBar";
+import { Pct, ProgressBar, progressTone } from "./ProgressBar";
 
 export function StatusPill({ prd }: { prd: Prd }) {
   return <span className={`pill tone-${progressTone(prd.progress)}`}>{prd.status}</span>;
@@ -34,7 +34,7 @@ export function PrdCard({ prd, change, onOpen }: { prd: Prd; change?: ChangeKind
       <div className="prd__bottom">
         <div className="prd__progress">
           <ProgressBar value={prd.progress} size="sm" label={`${prd.title}: ${prd.progress}%`} confettiKey={`card-${prd.id}`} />
-          <strong className="pct small">{prd.progress}%</strong>
+          <strong className="pct small"><Pct value={prd.progress} /></strong>
         </div>
         <div className="prd__foot">
           <span className="prd__tags">

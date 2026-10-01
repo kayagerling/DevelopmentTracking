@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { cancelConfetti, requestConfetti } from "../confetti";
 
 /** Kleur volgens de afspraak: rood < 25% ≤ oranje < 100% = groen. */
@@ -6,6 +6,23 @@ export function progressTone(pct: number): "red" | "orange" | "green" {
   if (pct >= 100) return "green";
   if (pct >= 25) return "orange";
   return "red";
+}
+
+/** Balkkleur: rood < 20% ≤ geel < 50%, dan geleidelijk van geel naar groen, en vanaf 80% groen. */
+export function progressColor(pct: number): string {
+  if (pct < 20) return "var(--red)";
+  if (pct < 50) return "var(--yellow)";
+  if (pct >= 80) return "var(--green)";
+  return `color-mix(in oklch, var(--green) ${Math.round(((pct - 50) / 30) * 100)}%, var(--yellow))`;
+}
+
+/** Percentage als tekst, met een groen vinkje bij 100%. */
+export function Pct({ value }: { value: number }) {
+  return (
+    <>
+      {value}%{value >= 100 && <span className="pct__done" aria-hidden> ✓</span>}
+    </>
+  );
 }
 
 interface Props {
@@ -41,7 +58,8 @@ export function ProgressBar({ value, size = "md", label, animated = false, confe
   return (
     <div
       ref={ref}
-      className={`bar bar--${size} tone-${progressTone(pct)} ${animated && pct < 100 ? "bar--active" : ""}`}
+      className={`bar bar--${size} ${animated && pct < 100 ? "bar--active" : ""}`}
+      style={{ "--tone": progressColor(pct) } as CSSProperties}
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}

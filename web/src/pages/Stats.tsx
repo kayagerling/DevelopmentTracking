@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { Avatar } from "../components/Avatar";
 import { BarList, ChartCard, ColumnChart, Legend, LineChart, type BarRow } from "../components/charts";
 import type { Dashboard, Prd } from "../types";
-import { haptic } from "../haptics";
 import { useScrollHint } from "../hooks";
 
 const C = {
@@ -43,7 +42,7 @@ function stackRow(key: string, label: BarRow["label"], prds: Prd[]): BarRow {
   };
 }
 
-export function StatsPage({ data, onBack }: { data: Dashboard; onBack: () => void }) {
+export function StatsPage({ data }: { data: Dashboard }) {
   const scrollRef = useScrollHint<HTMLDivElement>();
   const s = useMemo(() => {
     const prds = data.prds;
@@ -145,9 +144,6 @@ export function StatsPage({ data, onBack }: { data: Dashboard; onBack: () => voi
   return (
     <div ref={scrollRef} className="stats-page">
       <div className="stats-page__head">
-        <button ref={haptic} className="back" onClick={onBack}>
-          <span aria-hidden>‹</span> Overzicht
-        </button>
         <h2>Statistieken</h2>
       </div>
 
