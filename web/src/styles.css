@@ -12,6 +12,7 @@
   --red: #ff3b30;
   --orange: #ff9500;
   --green: #34c759;
+  --yellow: #ffcc00;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
   --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.05), 0 16px 40px rgba(0, 0, 0, 0.1);
   --radius: 20px;
@@ -32,6 +33,7 @@
   --red: #ff453a;
   --orange: #ff9f0a;
   --green: #30d158;
+  --yellow: #ffd60a;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
@@ -50,6 +52,7 @@
     --red: #ff453a;
     --orange: #ff9f0a;
     --green: #30d158;
+    --yellow: #ffd60a;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
     color-scheme: dark;
@@ -79,7 +82,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.9em; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
-.pct { font-variant-numeric: tabular-nums; font-weight: 600; }
+.pct { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.pct__done { color: var(--green); }
 .text-red { color: var(--red); } .text-orange { color: var(--orange); } .text-green { color: var(--green); }
 .eyebrow { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: none; }
 .link { color: var(--accent); font-size: 14px; font-weight: 500; padding: 4px 0; }
@@ -114,9 +118,15 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 
 /* ─────────────  Segmented control  ───────────── */
-.segmented { display: inline-flex; padding: 2px; border-radius: 10px; background: var(--track); }
+/* Dark mode: de actieve knop is duidelijk donkerder dan de rest van de balk. */
+:root { --seg-track: var(--track); --seg-active: var(--surface-solid); --seg-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04); }
+:root[data-theme="dark"] { --seg-track: rgba(118, 118, 128, 0.36); --seg-active: #161618; --seg-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.14); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --seg-track: rgba(118, 118, 128, 0.36); --seg-active: #161618; --seg-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.14); }
+}
+.segmented { display: inline-flex; padding: 2px; border-radius: 10px; background: var(--seg-track); }
 .segmented button { padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; display: inline-flex; gap: 6px; align-items: center; color: var(--text); transition: background 0.2s, box-shadow 0.2s; white-space: nowrap; }
-.segmented button.active { background: var(--surface-solid); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04); }
+.segmented button.active { background: var(--seg-active); box-shadow: var(--seg-active-shadow); }
 
 /* ─────────────  Cards  ───────────── */
 .card {
@@ -347,9 +357,6 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 .stats-page { display: grid; gap: 20px; align-content: start; min-width: 0; }
 .stats-page__head { display: flex; align-items: center; gap: 14px; }
 .stats-page__head h2 { font-size: 28px; font-weight: 700; }
-.back { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px 6px 10px; border-radius: 999px; background: var(--surface-2); color: var(--accent); font-size: 14px; font-weight: 500; }
-.back span { font-size: 20px; line-height: 0.8; }
-.back:hover { background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); }
 
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .tile { display: grid; gap: 2px; align-content: start; padding: 18px 20px; }

@@ -1,6 +1,6 @@
 import type { GroupProgress } from "../types";
 import { Avatar } from "./Avatar";
-import { ProgressBar } from "./ProgressBar";
+import { Pct, ProgressBar } from "./ProgressBar";
 
 interface Props {
   title: string;
@@ -37,7 +37,7 @@ export function GroupCard({ title, groups, withAvatar, selected, onSelect }: Pro
                   <span className="muted small">
                     {g.done}/{g.count} klaar
                   </span>
-                  <strong className="pct">{g.progress}%</strong>
+                  <strong className="pct"><Pct value={g.progress} /></strong>
                 </span>
               </div>
               <ProgressBar value={g.progress} label={`${g.label}: ${g.progress}%`} confettiKey={`${title}-${g.key}`} />

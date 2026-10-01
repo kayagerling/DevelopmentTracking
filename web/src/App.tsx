@@ -3,7 +3,7 @@ import { BranchCard, BranchIcon } from "./components/BranchCard";
 import { GroupCard } from "./components/GroupCard";
 import { PrdCard } from "./components/PrdCard";
 import { PrdSheet } from "./components/PrdSheet";
-import { ProgressBar } from "./components/ProgressBar";
+import { Pct, ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
 import { WeekCard } from "./components/WeekCard";
 import { WelcomeDialog } from "./components/WelcomeDialog";
@@ -139,7 +139,7 @@ export default function App() {
 
         {!data && !error && <div className="skeleton" />}
 
-        {data && page === "statistieken" && <StatsPage data={data} onBack={() => go("overzicht")} />}
+        {data && page === "statistieken" && <StatsPage data={data} />}
 
         {data && t && page === "overzicht" && (
           <div className="layout">
@@ -147,7 +147,7 @@ export default function App() {
             <section className="hero card">
               <div className="hero__main">
                 <p className="eyebrow">Totale voortgang</p>
-                <div className="hero__pct">{t.progress}%</div>
+                <div className="hero__pct"><Pct value={t.progress} /></div>
                 <ProgressBar value={t.progress} size="lg" label="Totale voortgang" animated />
               </div>
               <div className="stats">
