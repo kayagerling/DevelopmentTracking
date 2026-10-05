@@ -33,7 +33,13 @@ Open http://localhost:3000.
 
 ## Hosten op GitHub Pages
 
-GitHub Pages kan geen server draaien. Daarom maakt een GitHub Action (`.github/workflows/pages.yml`) elke ~15 minuten een momentopname (`dashboard.json`) van het scrumboard en zet de site opnieuw online. Dat gebeurt ook bij elke push naar `main` en bij wijzigingen aan issues in deze repo.
+GitHub Pages kan geen server draaien. Daarom maakt een GitHub Action (`.github/workflows/pages.yml`) een momentopname (`dashboard.json`) van het scrumboard en zet de site opnieuw online. Dat gebeurt:
+
+- **bij elke wijziging op het board** (kaart verplaatst, veld of issue aangepast, branch gepusht): de Action *Board in de gaten houden* (`.github/workflows/board-watch.yml`) kijkt elke minuut naar een vingerafdruk van het board en start de deploy zodra die verandert. Na een wijziging staat de site er binnen ~2–3 minuten op. Deze Action draait doorlopend (gratis bij een openbare repo) en start zichzelf elke ~5,5 uur opnieuw;
+- bij elke push naar `main`;
+- als vangnet via een cron (GitHub voert die in de praktijk maar om de paar uur uit).
+
+Staat de watcher een keer stil (bv. na een storing bij GitHub), start hem dan via **Actions → Board in de gaten houden → Run workflow**; de cron doet dat binnen een uur ook vanzelf.
 
 **Let op:** een Pages-site is openbaar. De volledige technische PRD-tekst wordt standaard níet gepubliceerd (zet de variable `PUBLISH_TECHNICAL_DESCRIPTION` op `true` als je dat wel wilt). Titels, status, personen en de versimpelde uitleg zijn wel zichtbaar.
 

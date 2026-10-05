@@ -3,8 +3,8 @@ name: Dashboard naar GitHub Pages
 # Haalt het scrumboard op, maakt de versimpelde uitleg en zet de site online.
 on:
   schedule:
-    - cron: "*/15 * * * *" # elke ~15 minuten (GitHub kan dit iets vertragen)
-  workflow_dispatch: # handmatig starten via het tabblad Actions
+    - cron: "*/15 * * * *" # vangnet; GitHub voert dit in de praktijk maar om de paar uur uit
+  workflow_dispatch: # handmatig, of door "Board in de gaten houden" bij elke wijziging op het board
   push:
     branches: [main]
   issues: # direct bijwerken bij wijzigingen aan issues in déze repo
@@ -47,6 +47,15 @@ jobs:
           path: server/.cache
           key: simplified-${{ github.run_id }}
           restore-keys: simplified-
+
+      # Vóór het ophalen, zodat de gegevens minstens zo nieuw zijn als deze vingerafdruk.
+      - name: Vingerafdruk van het board (board-hash.txt)
+        run: node .github/scripts/board-hash.mjs > web/dist/board-hash.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          GITHUB_OWNER: ${{ vars.PROJECT_OWNER }}
+          GITHUB_OWNER_TYPE: ${{ vars.PROJECT_OWNER_TYPE || 'user' }}
+          GITHUB_PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
 
       - name: Scrumboard ophalen (dashboard.json)
         run: node server/dist/export.js web/dist/dashboard.json

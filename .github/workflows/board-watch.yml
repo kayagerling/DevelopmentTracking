@@ -1,0 +1,65 @@
+name: Board in de gaten houden
+
+# Kijkt elke minuut of er iets op het scrumboard veranderd is (kaart verplaatst, veld of
+# issue aangepast, branch gepusht) en start dan "Dashboard naar GitHub Pages".
+# Eén run duurt ~5,5 uur en start daarna zichzelf opnieuw; de cron is alleen een vangnet.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+# Er draait er steeds maar één; een nieuwe wacht tot de vorige klaar is.
+concurrency:
+  group: board-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Board volgen
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          GITHUB_OWNER: ${{ vars.PROJECT_OWNER }}
+          GITHUB_OWNER_TYPE: ${{ vars.PROJECT_OWNER_TYPE || 'user' }}
+          GITHUB_PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # De Pages-workflow zet de vingerafdruk van wat er online staat in board-hash.txt.
+          site="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/board-hash.txt"
+          end=$((SECONDS + 345 * 60))
+          sent="" sent_at=0
+          while [ $SECONDS -lt $end ]; do
+            if now=$(node .github/scripts/board-hash.mjs); then
+              live=$(curl -fsS "$site?t=$(date +%s)" || true)
+              # Na 10 minuten opnieuw proberen als een deploy toch niet gelukt is.
+              [ $((SECONDS - sent_at)) -gt 600 ] && sent=""
+              if [ "$now" != "$live" ] && [ "$now" != "$sent" ]; then
+                busy=$(gh run list -R "$GITHUB_REPOSITORY" -w pages.yml --json status --jq '[.[] | select(.status != "completed")] | length' || echo fout)
+                if [ "$busy" = "0" ]; then
+                  echo "$(date -u +%H:%M) wijziging op het board, site wordt bijgewerkt"
+                  gh workflow run pages.yml -R "$GITHUB_REPOSITORY" --ref main && sent=$now sent_at=$SECONDS || true
+                fi
+              fi
+            fi
+            sleep 60
+          done
+
+      - name: Opnieuw starten
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run board-watch.yml -R "$GITHUB_REPOSITORY" --ref main
