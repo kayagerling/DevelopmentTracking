@@ -139,11 +139,169 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 .card__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 
-.hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; padding: 28px; }
-.hero__pct { font-size: 56px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-bottom: 16px; font-variant-numeric: tabular-nums; }
-.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.stat { background: var(--surface-2); border-radius: 14px; padding: 14px 16px; display: grid; gap: 2px; }
-.stat__value { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+/* ─────────────  Totale voortgang: meter met aurora en planeet  ───────────── */
+:root {
+  --total-bg: radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #fcfaff 60%, #f6f1ff 100%);
+  --total-border: rgba(124, 58, 237, 0.14);
+  --total-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 32px -14px rgba(91, 33, 182, 0.24);
+  --total-accent: #7c3aed;
+  --aurora-1: rgba(139, 92, 246, 0.5);
+  --aurora-2: rgba(217, 70, 239, 0.36);
+  --aurora-3: rgba(99, 102, 241, 0.42);
+  --aurora-4: rgba(168, 85, 247, 0.44);
+  --aurora-rim: rgba(139, 92, 246, 0.22);
+  --gauge-track: rgba(76, 29, 149, 0.08);
+  --gauge-halo: 0.3;
+  --tile-bg: rgba(255, 255, 255, 0.66);
+  --tile-border: rgba(124, 58, 237, 0.12);
+  /* Planeet (canvas): r, g, b + dekking */
+  --planet-land: 109, 40, 217; --planet-sea: 139, 92, 246; --planet-glow: 167, 139, 250;
+  --planet-land-a: 0.62; --planet-sea-a: 0.2; --planet-glow-a: 0.3;
+}
+:root[data-theme="dark"] {
+  --total-bg: radial-gradient(120% 90% at 50% 0%, #1b1430 0%, #100c1d 55%, #0a0812 100%);
+  --total-border: rgba(167, 139, 250, 0.16);
+  --total-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 20px 40px -18px rgba(91, 33, 182, 0.55);
+  --total-accent: #a78bfa;
+  --aurora-1: rgba(124, 58, 237, 0.8);
+  --aurora-2: rgba(192, 38, 211, 0.6);
+  --aurora-3: rgba(79, 70, 229, 0.7);
+  --aurora-4: rgba(147, 51, 234, 0.7);
+  --aurora-rim: rgba(167, 139, 250, 0.3);
+  --gauge-track: rgba(255, 255, 255, 0.09);
+  --gauge-halo: 0.75;
+  --tile-bg: rgba(255, 255, 255, 0.05);
+  --tile-border: rgba(255, 255, 255, 0.09);
+  --planet-land: 221, 214, 254; --planet-sea: 167, 139, 250; --planet-glow: 139, 92, 246;
+  --planet-land-a: 0.9; --planet-sea-a: 0.24; --planet-glow-a: 0.42;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --total-bg: radial-gradient(120% 90% at 50% 0%, #1b1430 0%, #100c1d 55%, #0a0812 100%);
+    --total-border: rgba(167, 139, 250, 0.16);
+    --total-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 20px 40px -18px rgba(91, 33, 182, 0.55);
+    --total-accent: #a78bfa;
+    --aurora-1: rgba(124, 58, 237, 0.8);
+    --aurora-2: rgba(192, 38, 211, 0.6);
+    --aurora-3: rgba(79, 70, 229, 0.7);
+    --aurora-4: rgba(147, 51, 234, 0.7);
+    --aurora-rim: rgba(167, 139, 250, 0.3);
+    --gauge-track: rgba(255, 255, 255, 0.09);
+    --gauge-halo: 0.75;
+    --tile-bg: rgba(255, 255, 255, 0.05);
+    --tile-border: rgba(255, 255, 255, 0.09);
+    --planet-land: 221, 214, 254; --planet-sea: 167, 139, 250; --planet-glow: 139, 92, 246;
+    --planet-land-a: 0.9; --planet-sea-a: 0.24; --planet-glow-a: 0.42;
+  }
+}
+
+.total {
+  --gauge-w: 340px;
+  position: relative; isolation: isolate;
+  display: grid; justify-items: center;
+  padding: 32px 24px 24px;
+  border-radius: 36px;
+  background: var(--total-bg);
+  border-color: var(--total-border);
+  box-shadow: var(--total-shadow);
+}
+.total > * { z-index: 1; }
+
+/* Aurora: lichtvlekken langs de binnenranden die langzaam schuiven en ademen.
+   Alleen deze laag knipt af: met overflow op de kaart zelf drukt de zijkolom hem plat. */
+.total__aurora {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  border-radius: inherit; overflow: hidden;
+  --edge: rgba(0, 0, 0, 0.45);
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000, var(--edge) 14%, transparent min(42%, 170px)),
+    linear-gradient(to top, #000, var(--edge) 14%, transparent min(42%, 170px)),
+    linear-gradient(to right, #000, var(--edge) 14%, transparent min(42%, 170px)),
+    linear-gradient(to left, #000, var(--edge) 14%, transparent min(42%, 170px));
+  mask-image:
+    linear-gradient(to bottom, #000, var(--edge) 14%, transparent min(42%, 170px)),
+    linear-gradient(to top, #000, var(--edge) 14%, transparent min(42%, 170px)),
+    linear-gradient(to right, #000, var(--edge) 14%, transparent min(42%, 170px)),
+    linear-gradient(to left, #000, var(--edge) 14%, transparent min(42%, 170px));
+}
+.total__aurora::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: inset 0 0 48px 4px var(--aurora-rim);
+  animation: aurora-breathe 7s ease-in-out infinite alternate;
+}
+.total__aurora i {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c), transparent);
+  animation: 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.total__aurora i:nth-child(1) { --c: var(--aurora-1); width: 85%; height: 50%; left: -20%; top: -20%; animation-name: aurora-1; animation-duration: 16s; }
+.total__aurora i:nth-child(2) { --c: var(--aurora-2); width: 55%; height: 80%; right: -24%; top: 0; animation-name: aurora-2; animation-duration: 21s; }
+.total__aurora i:nth-child(3) { --c: var(--aurora-3); width: 90%; height: 50%; left: 10%; bottom: -24%; animation-name: aurora-3; animation-duration: 18s; }
+.total__aurora i:nth-child(4) { --c: var(--aurora-4); width: 50%; height: 75%; left: -24%; bottom: 0; animation-name: aurora-4; animation-duration: 23s; }
+@keyframes aurora-1 { to { transform: translate(38%, 8%) scale(1.15, 1.25); } }
+@keyframes aurora-2 { to { transform: translate(-6%, 34%) scale(1.25, 1.1); } }
+@keyframes aurora-3 { to { transform: translate(-30%, -6%) scale(1.1, 1.3); } }
+@keyframes aurora-4 { to { transform: translate(8%, -38%) scale(1.3, 1.1); } }
+@keyframes aurora-breathe { from { opacity: 0.45; } to { opacity: 1; } }
+
+/* Knop om de planeet aan/uit te zetten */
+.total__toggle {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: var(--muted); transition: color 0.2s, background 0.2s;
+}
+.total__toggle[aria-pressed="true"] { color: var(--total-accent); }
+.total__toggle:focus-visible { border-radius: 50%; }
+@media (hover: hover) {
+  .total__toggle:hover { color: var(--text); background: var(--tile-bg); }
+}
+
+/* Meter: halve cirkel, percentage onderin het midden */
+.gauge {
+  position: relative;
+  width: min(var(--gauge-w), 100%);
+  aspect-ratio: 210 / 110;
+  container-type: inline-size;
+}
+.gauge > svg, .gauge__planet { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gauge > svg { overflow: visible; }
+.gauge__track, .gauge__halo, .gauge__fill, .gauge__glint { fill: none; stroke-linecap: round; }
+.gauge__track { stroke: var(--gauge-track); }
+.gauge__halo, .gauge__fill { stroke: var(--tone); }
+.gauge__halo { opacity: var(--gauge-halo); }
+/* Lichtglans die over het gevulde deel loopt (zoals eerder in de balk) */
+.gauge__glint {
+  stroke: #fff; opacity: 0.55;
+  stroke-dasharray: 12 200; stroke-dashoffset: 20;
+  animation: gauge-glint 3.6s cubic-bezier(0.45, 0, 0.35, 1) 1.4s infinite;
+}
+@keyframes gauge-glint { 0% { stroke-dashoffset: 20; } 60%, 100% { stroke-dashoffset: -112; } }
+.gauge__value {
+  position: absolute; left: 0; right: 0; bottom: 4.5%;
+  text-align: center; line-height: 1;
+  font-size: 56px; font-size: 18cqw;
+  font-weight: 700; letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
+}
+.gauge__unit { font-size: 0.5em; font-weight: 600; letter-spacing: 0; margin-left: 0.04em; color: var(--muted); }
+.gauge__value .pct__done { font-size: 0.42em; margin-left: 0.2em; vertical-align: 0.9em; }
+.gauge__end { position: absolute; width: 2px; height: 2px; margin: -1px 0 0 -1px; pointer-events: none; }
+
+.total__label { margin: 12px 0 0; font-size: 14px; font-weight: 600; }
+.total__tiles {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto;
+  column-gap: 10px; width: min(100%, 440px); margin-top: 20px;
+}
+/* Subgrid: getallen en labels staan in alle tegels op één lijn, ook als een label op twee regels valt. */
+.total__tile {
+  display: grid; grid-row: span 2; grid-template-rows: subgrid; row-gap: 2px;
+  justify-items: center; align-items: start; text-align: center;
+  padding: 20px 8px; border-radius: 20px;
+  background: var(--tile-bg); border: 1px solid var(--tile-border);
+}
+.total__num { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.total__name { font-size: 12.5px; line-height: 1.25; color: var(--muted); text-wrap: balance; }
 
 /* ─────────────  Progress bars  ───────────── */
 .bar { width: 100%; background: var(--track); border-radius: 999px; overflow: hidden; height: 8px; }
@@ -213,13 +371,16 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 
 /* ─────────────  Responsive  ───────────── */
 @media (max-width: 860px) {
-  .grid-2, .hero { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .container { padding: 16px 16px 60px; }
   .topbar__inner { padding: 10px 16px; }
   .segmented__label, .brand p { display: none; }
-  .hero__pct { font-size: 44px; }
+  .total { --gauge-w: 290px; padding: 28px 18px 18px; border-radius: 30px; }
+  .total__tiles { column-gap: 8px; margin-top: 18px; }
+  .total__tile { padding: 18px 6px; border-radius: 18px; }
+  .total__num { font-size: 24px; }
   .prd-grid { grid-template-columns: 1fr; }
   .filters, .segmented--wide { width: 100%; }
   .segmented--wide button { flex: 1; padding: 5px 6px; justify-content: center; }
@@ -269,15 +430,9 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   }
   .layout__side { gap: 16px; padding-right: 4px; }
   .layout__side .grid-2 { grid-template-columns: 1fr; gap: 16px; }
-  .layout__side .hero { grid-template-columns: 1fr; gap: 20px; padding: 22px; }
-  .layout__side .hero__pct { font-size: 48px; }
-  .layout__side .stats { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .layout__side .stat { padding: 10px 12px; }
-  .layout__side .stat__value { font-size: 22px; }
-  .layout__side .stat .small { font-size: 11.5px; line-height: 1.25; }
-  .layout__side .hero { gap: 16px; padding: 20px; }
-  .layout__side .hero__pct { font-size: 40px; margin-bottom: 12px; }
-  .layout__side .card:not(.hero) { padding: 16px 18px 12px; }
+  .layout__side .total { --gauge-w: 290px; padding: 30px 22px 22px; }
+  .layout__side .total__num { font-size: 26px; }
+  .layout__side .card:not(.total) { padding: 16px 18px 12px; }
   .layout__side .card__head { margin-bottom: 6px; }
   .layout__side h2 { font-size: 17px; }
   .layout__side .groups { gap: 0; }
@@ -293,38 +448,8 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   .layout__main .prd-grid { padding: 2px 4px 0 0; }
 }
 
-/* ─────────────  Actieve voortgangsbalk (Totale voortgang)  ─────────────
-   Een lichtglans loopt van links naar rechts door het gevulde deel.
-   De breedte van de balk (het percentage) verandert hierdoor niet. */
-.bar--active .bar__fill { position: relative; overflow: hidden; }
-.bar--active .bar__fill::after {
-  content: "";
-  position: absolute; inset: 0;
-  width: 45%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-  transform: translateX(-100%);
-  animation: bar-sweep 2.2s cubic-bezier(0.45, 0, 0.35, 1) infinite;
-}
-.bar--active .bar__fill::before {
-  content: "";
-  position: absolute; inset: 0;
-  border-radius: inherit;
-  background: rgba(255, 255, 255, 0.12);
-  animation: bar-breathe 2.2s ease-in-out infinite;
-}
-@keyframes bar-sweep {
-  0% { transform: translateX(-100%); }
-  70%, 100% { transform: translateX(calc(100% / 0.45 + 100%)); }
-}
-@keyframes bar-breathe {
-  0%, 100% { opacity: 0; }
-  35% { opacity: 1; }
-}
-
 /* ─────────────  Branches  ───────────── */
 .branch-icon { flex: none; }
-.hero__branches { grid-column: 1 / -1; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--text); }
-.hero__branches .branch-icon { color: var(--muted); }
 .branches { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 2px; }
 .branch { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
 .branch:last-child { border-bottom: 0; }

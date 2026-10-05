@@ -19,12 +19,15 @@ export function BranchIcon({ size = 14 }: { size?: number }) {
 export function BranchCard({ branches, onOpenPrd }: { branches: Branch[]; onOpenPrd: (id: string) => void }) {
   const [all, setAll] = useState(false);
   const shown = all ? branches : branches.slice(0, COLLAPSED);
+  const withPrd = branches.filter((b) => b.prdId).length;
 
   return (
     <section className="card">
       <header className="card__head">
         <h2>Branches</h2>
-        <span className="muted small">{branches.length} totaal</span>
+        <span className="muted small">
+          {branches.length} totaal · {withPrd} bij een PRD
+        </span>
       </header>
       {branches.length ? (
         <ul className="branches">

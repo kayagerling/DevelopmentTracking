@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties, type RefObject } from "react";
 import { cancelConfetti, requestConfetti } from "../confetti";
 
 /** Kleur volgens de afspraak: rood < 25% ≤ oranje < 100% = groen. */
@@ -25,22 +25,8 @@ export function Pct({ value }: { value: number }) {
   );
 }
 
-interface Props {
-  value: number;
-  size?: "sm" | "md" | "lg";
-  label?: string;
-  /** Lichtglans die door het gevulde deel beweegt (verandert het percentage niet). */
-  animated?: boolean;
-  /** Unieke sleutel voor de confetti bij 100% (standaard het label). */
-  confettiKey?: string;
-}
-
-export function ProgressBar({ value, size = "md", label, animated = false, confettiKey }: Props) {
-  const pct = Math.max(0, Math.min(100, Math.round(value)));
-  const ref = useRef<HTMLDivElement>(null);
-  const key = confettiKey ?? label;
-
-  // Bij 100%: confetti zodra de balk echt in beeld is (één keer, via de wachtrij).
+/** Bij 100%: confetti zodra het element echt in beeld is (één keer, via de wachtrij). */
+export function useConfetti(ref: RefObject<Element>, pct: number, key: string | undefined) {
   useEffect(() => {
     const el = ref.current;
     if (pct < 100 || !el || !key || typeof IntersectionObserver === "undefined") return;
@@ -53,12 +39,26 @@ export function ProgressBar({ value, size = "md", label, animated = false, confe
       io.disconnect();
       cancelConfetti(key);
     };
-  }, [pct, key]);
+  }, [ref, pct, key]);
+}
+
+interface Props {
+  value: number;
+  size?: "sm" | "md" | "lg";
+  label?: string;
+  /** Unieke sleutel voor de confetti bij 100% (standaard het label). */
+  confettiKey?: string;
+}
+
+export function ProgressBar({ value, size = "md", label, confettiKey }: Props) {
+  const pct = Math.max(0, Math.min(100, Math.round(value)));
+  const ref = useRef<HTMLDivElement>(null);
+  useConfetti(ref, pct, confettiKey ?? label);
 
   return (
     <div
       ref={ref}
-      className={`bar bar--${size} ${animated && pct < 100 ? "bar--active" : ""}`}
+      className={`bar bar--${size}`}
       style={{ "--tone": progressColor(pct) } as CSSProperties}
       role="progressbar"
       aria-valuenow={pct}

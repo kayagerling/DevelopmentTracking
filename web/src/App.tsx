@@ -1,10 +1,10 @@
 import { useEffect, useMemo } from "react";
-import { BranchCard, BranchIcon } from "./components/BranchCard";
+import { BranchCard } from "./components/BranchCard";
 import { GroupCard } from "./components/GroupCard";
 import { PrdCard } from "./components/PrdCard";
 import { PrdSheet } from "./components/PrdSheet";
-import { Pct, ProgressBar } from "./components/ProgressBar";
 import { ThemeSwitch } from "./components/ThemeSwitch";
+import { TotalCard } from "./components/TotalCard";
 import { WeekCard } from "./components/WeekCard";
 import { WelcomeDialog } from "./components/WelcomeDialog";
 import { haptic } from "./haptics";
@@ -144,26 +144,7 @@ export default function App() {
         {data && t && page === "overzicht" && (
           <div className="layout">
             <aside ref={sideRef} className="layout__side">
-            <section className="hero card">
-              <div className="hero__main">
-                <p className="eyebrow">Totale voortgang</p>
-                <div className="hero__pct"><Pct value={t.progress} /></div>
-                <ProgressBar value={t.progress} size="lg" label="Totale voortgang" animated />
-              </div>
-              <div className="stats">
-                <Stat label="PRD's" value={t.count} />
-                <Stat label="Klaar" value={t.done} tone="green" />
-                <Stat label="Bezig" value={t.inProgress} tone="orange" />
-                <Stat label="Nog niet gestart" value={t.notStarted} tone="red" />
-              </div>
-              <p className="hero__branches small">
-                <BranchIcon />
-                <span>
-                  <strong>{t.branches}</strong> {t.branches === 1 ? "branch" : "branches"}
-                  <span className="muted"> · {t.branchesWithPrd} bij een PRD</span>
-                </span>
-              </p>
-            </section>
+            <TotalCard totals={t} />
 
             <WeekCard prds={data.prds} onOpenPrd={openById} />
 
@@ -233,14 +214,5 @@ export default function App() {
       {open && <PrdSheet prd={open} onClose={closePrd} />}
       <WelcomeDialog />
     </>
-  );
-}
-
-function Stat({ label, value, tone }: { label: string; value: number; tone?: string }) {
-  return (
-    <div className="stat">
-      <span className={`stat__value ${tone ? `text-${tone}` : ""}`}>{value}</span>
-      <span className="muted small">{label}</span>
-    </div>
   );
 }

@@ -90,6 +90,31 @@ export function useTheme() {
   return [theme, setTheme] as const;
 }
 
+/** Staat de planeet in de totale voortgang standaard aan? Zet iemand hem zelf aan/uit, dan onthoudt de browser dat. */
+const PLANET_DEFAULT = true;
+
+export function usePlanet() {
+  const [on, setOn] = useState(() => {
+    try {
+      const v = localStorage.getItem("dt-planet");
+      return v === null ? PLANET_DEFAULT : v === "1";
+    } catch {
+      return PLANET_DEFAULT;
+    }
+  });
+
+  const toggle = () => {
+    setOn(!on);
+    try {
+      localStorage.setItem("dt-planet", on ? "0" : "1");
+    } catch {
+      /* geen opslag beschikbaar */
+    }
+  };
+
+  return [on, toggle] as const;
+}
+
 export type ChangeKind = "nieuw" | "gewijzigd" | "klaar";
 type Snapshot = { savedAt: string; prds: Record<string, { status: string; progress: number }> };
 const SEEN_KEY = "dt-seen";
