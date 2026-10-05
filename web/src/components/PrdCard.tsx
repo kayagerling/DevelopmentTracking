@@ -5,8 +5,30 @@ import { AvatarStack } from "./Avatar";
 import { BranchIcon } from "./BranchCard";
 import { Pct, ProgressBar, progressTone } from "./ProgressBar";
 
+/** Icoontje per stand: leeg rondje (nog niet gestart), half (bezig), vinkje (klaar). */
+function StatusIcon({ tone }: { tone: "red" | "orange" | "green" }) {
+  return (
+    <svg className="pill__icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+      {tone === "green" ? (
+        <path d="M2.5 6.3l2.3 2.2 4.7-5" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <>
+          <circle cx="6" cy="6" r="4.2" />
+          {tone === "orange" && <path d="M6 1.8a4.2 4.2 0 0 1 0 8.4z" fill="currentColor" stroke="none" />}
+        </>
+      )}
+    </svg>
+  );
+}
+
 export function StatusPill({ prd }: { prd: Prd }) {
-  return <span className={`pill tone-${progressTone(prd.progress)}`}>{prd.status}</span>;
+  const tone = progressTone(prd.progress);
+  return (
+    <span className={`pill tone-${tone}`}>
+      <StatusIcon tone={tone} />
+      {prd.status}
+    </span>
+  );
 }
 
 const changeLabel: Record<ChangeKind, { text: string; tone: string }> = {
