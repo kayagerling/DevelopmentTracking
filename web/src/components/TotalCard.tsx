@@ -4,6 +4,7 @@ import { usePlanet } from "../hooks";
 import type { Dashboard } from "../types";
 import { Planet } from "./Planet";
 import { progressColor, useConfetti } from "./ProgressBar";
+import { useLiquidGlass } from "./useLiquidGlass";
 
 // Maten van de meter in viewBox-eenheden; de planeet gebruikt dezelfde.
 const W = 210, H = 110, CX = 105, CY = 105, R = 100, STROKE = 10, PLANET_R = 80;
@@ -63,12 +64,16 @@ export function TotalCard({ totals: t }: { totals: Dashboard["totals"] }) {
   const n = Math.round(shown);
   const [planet, togglePlanet] = usePlanet();
   const end = useRef<HTMLSpanElement>(null);
+  const card = useRef<HTMLElement>(null);
+  const tiles = useRef<HTMLDivElement>(null);
+  const glassBg = useRef<HTMLCanvasElement>(null);
+  useLiquidGlass(tiles, glassBg, card);
   const glow = `gauge-glow-${useId().replace(/:/g, "")}`;
   // Confetti pas als de boog helemaal vol is.
   useConfetti(end, n, "Totale voortgang");
 
   return (
-    <section className="card total" style={{ "--tone": progressColor(pct) } as CSSProperties}>
+    <section ref={card} className="card total" style={{ "--tone": progressColor(pct) } as CSSProperties}>
       <div className="total__aurora" aria-hidden>
         <i /> <i /> <i /> <i />
       </div>
@@ -110,7 +115,8 @@ export function TotalCard({ totals: t }: { totals: Dashboard["totals"] }) {
         Totale voortgang <span className="muted">· {t.count} {t.count === 1 ? "PRD" : "PRD's"}</span>
       </p>
 
-      <div className="total__tiles">
+      <div ref={tiles} className="total__tiles">
+        <canvas ref={glassBg} className="total__glass-bg" aria-hidden />
         <Tile value={t.done} label="Klaar" tone="green" />
         <Tile value={t.inProgress} label="Bezig" tone="orange" />
         <Tile value={t.notStarted} label="Nog niet gestart" tone="red" />

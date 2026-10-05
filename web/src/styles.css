@@ -141,7 +141,8 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 
 /* ─────────────  Totale voortgang: meter met aurora en planeet  ───────────── */
 :root {
-  --total-bg: radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #fcfaff 60%, #f6f1ff 100%);
+  /* Achtergrond van de kaart in drie stappen (het glas van de tegels tekent hem na) */
+  --total-bg-1: #ffffff; --total-bg-2: #fcfaff; --total-bg-3: #f6f1ff;
   --total-border: rgba(124, 58, 237, 0.14);
   --total-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 32px -14px rgba(91, 33, 182, 0.24);
   --total-accent: #7c3aed;
@@ -159,7 +160,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   --planet-land-a: 0.62; --planet-sea-a: 0.2; --planet-glow-a: 0.3;
 }
 :root[data-theme="dark"] {
-  --total-bg: radial-gradient(120% 90% at 50% 0%, #1b1430 0%, #100c1d 55%, #0a0812 100%);
+  --total-bg-1: #1b1430; --total-bg-2: #100c1d; --total-bg-3: #0a0812;
   --total-border: rgba(167, 139, 250, 0.16);
   --total-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 20px 40px -18px rgba(91, 33, 182, 0.55);
   --total-accent: #a78bfa;
@@ -177,7 +178,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --total-bg: radial-gradient(120% 90% at 50% 0%, #1b1430 0%, #100c1d 55%, #0a0812 100%);
+    --total-bg-1: #1b1430; --total-bg-2: #100c1d; --total-bg-3: #0a0812;
     --total-border: rgba(167, 139, 250, 0.16);
     --total-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 20px 40px -18px rgba(91, 33, 182, 0.55);
     --total-accent: #a78bfa;
@@ -201,7 +202,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   display: grid; justify-items: center;
   padding: 32px 24px 24px;
   border-radius: 36px;
-  background: var(--total-bg);
+  background: radial-gradient(120% 90% at 50% 0%, var(--total-bg-1) 0%, var(--total-bg-2) 58%, var(--total-bg-3) 100%);
   border-color: var(--total-border);
   box-shadow: var(--total-shadow);
 }
@@ -303,6 +304,18 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 .total__num { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .total__name { font-size: 12.5px; line-height: 1.25; color: var(--muted); text-wrap: balance; }
 
+/* Liquid glass op de tegels (WebGL, zie useLiquidGlass). Zonder WebGL blijven de tegels zoals hierboven. */
+.total__tiles {
+  /* Ruimte rondom voor het glas: de breking kijkt ook net buiten de tegels. Netto verandert de layout niet. */
+  --bleed: 24px;
+  position: relative; padding: var(--bleed);
+  width: calc(min(100%, 440px) + 2 * var(--bleed));
+  margin: calc(var(--tiles-gap, 20px) - var(--bleed)) calc(-1 * var(--bleed)) calc(-1 * var(--bleed));
+}
+.total__glass-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; visibility: hidden; } /* alleen voor het glas, niet voor het oog */
+.total__tile > span { position: relative; z-index: 1; } /* boven het glas-canvas */
+.total__tiles.is-glass .total__tile { background: none; border-color: transparent; }
+
 /* ─────────────  Progress bars  ───────────── */
 .bar { width: 100%; background: var(--track); border-radius: 999px; overflow: hidden; height: 8px; }
 .bar--sm { height: 6px; } .bar--lg { height: 12px; }
@@ -378,7 +391,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   .topbar__inner { padding: 10px 16px; }
   .segmented__label, .brand p { display: none; }
   .total { --gauge-w: 290px; padding: 28px 18px 18px; border-radius: 30px; }
-  .total__tiles { column-gap: 8px; margin-top: 18px; }
+  .total__tiles { column-gap: 8px; --tiles-gap: 18px; }
   .total__tile { padding: 18px 6px; border-radius: 18px; }
   .total__num { font-size: 24px; }
   .prd-grid { grid-template-columns: 1fr; }
