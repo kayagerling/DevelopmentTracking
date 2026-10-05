@@ -198,6 +198,7 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
 
 .total {
   --gauge-w: 340px;
+  --aurora-reach: 170px; /* hoe ver de aurora maximaal naar binnen reikt */
   position: relative; isolation: isolate;
   display: grid; justify-items: center;
   padding: 32px 24px 24px;
@@ -215,15 +216,15 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   border-radius: inherit; overflow: hidden;
   --edge: rgba(0, 0, 0, 0.45);
   -webkit-mask-image:
-    linear-gradient(to bottom, #000, var(--edge) 14%, transparent min(42%, 170px)),
-    linear-gradient(to top, #000, var(--edge) 14%, transparent min(42%, 170px)),
-    linear-gradient(to right, #000, var(--edge) 14%, transparent min(42%, 170px)),
-    linear-gradient(to left, #000, var(--edge) 14%, transparent min(42%, 170px));
+    linear-gradient(to bottom, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach))),
+    linear-gradient(to top, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach))),
+    linear-gradient(to right, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach))),
+    linear-gradient(to left, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach)));
   mask-image:
-    linear-gradient(to bottom, #000, var(--edge) 14%, transparent min(42%, 170px)),
-    linear-gradient(to top, #000, var(--edge) 14%, transparent min(42%, 170px)),
-    linear-gradient(to right, #000, var(--edge) 14%, transparent min(42%, 170px)),
-    linear-gradient(to left, #000, var(--edge) 14%, transparent min(42%, 170px));
+    linear-gradient(to bottom, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach))),
+    linear-gradient(to top, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach))),
+    linear-gradient(to right, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach))),
+    linear-gradient(to left, #000, var(--edge) 14%, transparent min(42%, var(--aurora-reach)));
 }
 .total__aurora::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit;
@@ -254,6 +255,16 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
   color: var(--muted); transition: color 0.2s, background 0.2s;
 }
 .total__toggle[aria-pressed="true"] { color: var(--total-accent); }
+.total__bar { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; gap: 4px; }
+.total__btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: var(--muted); transition: color 0.2s, background 0.2s;
+}
+.total__btn:focus-visible { border-radius: 50%; }
+@media (hover: hover) {
+  .total__btn:hover { color: var(--text); background: var(--tile-bg); }
+}
 .total__toggle:focus-visible { border-radius: 50%; }
 @media (hover: hover) {
   .total__toggle:hover { color: var(--text); background: var(--tile-bg); }
@@ -641,4 +652,30 @@ code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-si
     opacity: 0; transition: opacity 0.2s;
   }
   .layout__main[data-more-above] .list-head::after { opacity: 1; }
+}
+
+/* ─────────────  Totale voortgang op volledig scherm (#/voortgang)  ───────────── */
+.progress-page {
+  position: fixed; inset: 0; z-index: 40;
+  display: grid; overflow: auto;
+  background: var(--bg);
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.total.total--full {
+  /* De meter zo groot als past: begrensd door de breedte én door wat er in de hoogte overblijft. */
+  --gauge-w: min(74vw, calc((100dvh - 380px) * 210 / 110), 880px);
+  --aurora-reach: 32vmin;
+  min-height: 100%; align-content: center;
+  padding: 64px 32px 48px; border-radius: 44px;
+}
+.total--full .total__bar { top: 20px; left: 20px; }
+.total--full .total__toggle { top: 20px; right: 20px; }
+.total--full .total__label { margin-top: 2.2vmin; font-size: clamp(15px, 2.4vmin, 26px); }
+.total--full .total__tiles { --tiles-gap: 4.5vmin; column-gap: clamp(8px, 2vmin, 22px); width: calc(min(100%, 820px) + 2 * var(--bleed)); }
+.total--full .total__tile { padding: clamp(18px, 3.4vmin, 40px) 10px; border-radius: 28px; }
+.total--full .total__num { font-size: clamp(26px, 6.4vmin, 72px); }
+.total--full .total__name { font-size: clamp(12.5px, 2vmin, 21px); }
+@media (max-width: 560px) {
+  .total.total--full { --gauge-w: min(86vw, calc((100dvh - 340px) * 210 / 110)); padding: 64px 16px 28px; border-radius: 34px; }
+  .total--full .total__tile { border-radius: 20px; }
 }

@@ -9,6 +9,7 @@ import { WeekCard } from "./components/WeekCard";
 import { WelcomeDialog } from "./components/WelcomeDialog";
 import { haptic } from "./haptics";
 import { IS_STATIC, useChanges, useDashboard, useScrollHint, useTheme } from "./hooks";
+import { ExpandIcon, ProgressPage } from "./pages/Progress";
 import { StatsPage } from "./pages/Stats";
 import { useRoute, type SortKey, type StatusFilter } from "./route";
 import type { Prd } from "./types";
@@ -140,11 +141,19 @@ export default function App() {
         {!data && !error && <div className="skeleton" />}
 
         {data && page === "statistieken" && <StatsPage data={data} />}
+        {data && t && page === "voortgang" && <ProgressPage totals={t} onClose={() => go("overzicht")} />}
 
         {data && t && page === "overzicht" && (
           <div className="layout">
             <aside ref={sideRef} className="layout__side">
-            <TotalCard totals={t} />
+            <TotalCard
+              totals={t}
+              toolbar={
+                <button ref={haptic} className="total__btn" onClick={() => go("voortgang")} aria-label="Volledig scherm" title="Volledig scherm">
+                  <ExpandIcon />
+                </button>
+              }
+            />
 
             <WeekCard prds={data.prds} onOpenPrd={openById} />
 

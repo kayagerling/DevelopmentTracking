@@ -39,6 +39,12 @@ const clear = (color: string) => {
   return m && m.length >= 3 ? `rgba(${m[0]}, ${m[1]}, ${m[2]}, 0)` : "rgba(0, 0, 0, 0)";
 };
 
+/** "170px" of "32vmin" → pixels (custom properties komen als tekst terug). */
+const toPx = (value: string) => {
+  const n = parseFloat(value);
+  return value.endsWith("vmin") ? (n * Math.min(innerWidth, innerHeight)) / 100 : n;
+};
+
 function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
@@ -57,6 +63,7 @@ function paint(bg: HTMLCanvasElement, root: HTMLElement, card: HTMLElement, auro
   const cs = getComputedStyle(card);
   const v = (n: string) => cs.getPropertyValue(n).trim();
   const radius = parseFloat(cs.borderTopLeftRadius) || 0;
+  const reach = toPx(v("--aurora-reach")) || 170; // zelfde maskerlengte als in de CSS
 
   // 1. Achtergrond: radial-gradient(120% 90% at 50% 0%, bg-1, bg-2 58%, bg-3)
   const ctx = bg.getContext("2d")!;
@@ -117,7 +124,7 @@ function paint(bg: HTMLCanvasElement, root: HTMLElement, card: HTMLElement, auro
   ];
   for (const [x0, y0, x1, y1, len] of edges) {
     const lg = m.createLinearGradient(x0, y0, x1, y1);
-    const end = Math.min(0.42, 170 / len);
+    const end = Math.min(0.42, reach / len);
     lg.addColorStop(0, "#000");
     lg.addColorStop(Math.min(0.14, end * 0.9), "rgba(0, 0, 0, 0.45)");
     lg.addColorStop(end, "rgba(0, 0, 0, 0)");

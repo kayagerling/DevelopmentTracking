@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react";
 const TILT = 0.34; // de camera kijkt iets van boven (radialen)
 const TURN_MS = 140_000; // één omwenteling
 const FRAME_MS = 1000 / 30; // 30 fps is genoeg voor zo'n trage draai
-const GAP_PX = 5.2; // afstand tussen de punten op het oppervlak
+const GAP_PX = 5.2; // afstand tussen de punten op het oppervlak (groeit mee bij een grote planeet)
 const LEVELS = 12; // doorzichtigheid in stapjes: per stap één keer vullen
 const START = 2.2; // beginstand (en de vaste stand zonder animatie)
 const LIGHT = normalize(-0.55, 0.6, 0.58); // licht van linksboven-voor
@@ -140,7 +140,7 @@ function render(ctx: CanvasRenderingContext2D, dots: Dot[], w: number, h: number
   // Punten: draaien om de as, kantelen naar de camera, alleen de voorkant boven de horizon.
   const ca = Math.cos(angle), sa = Math.sin(angle);
   const ct = Math.cos(TILT), st = Math.sin(TILT);
-  const size = Math.min(1.3, Math.max(0.8, R / 105));
+  const size = Math.min(2.6, Math.max(0.8, R / 105));
   for (const b of buckets) b.length = 0;
 
   for (const d of dots) {
@@ -218,7 +218,7 @@ export function Planet({ cx, cy, r }: Geometry) {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
-      dots = makeDots(GAP_PX / (r * w));
+      dots = makeDots(Math.max(GAP_PX, r * w * 0.045) / (r * w));
       draw();
     };
 

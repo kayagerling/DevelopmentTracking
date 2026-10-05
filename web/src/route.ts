@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Zo blijven filters staan na verversen en kun je een PRD of lijst delen.
  */
 
-export type Page = "overzicht" | "statistieken";
+export type Page = "overzicht" | "statistieken" | "voortgang";
 export type StatusFilter = "all" | "todo" | "busy" | "done";
 export type SortKey = "standaard" | "nummer" | "voortgang" | "bijgewerkt";
 
@@ -32,7 +32,7 @@ function parse(): Route {
   const status = p.get("status") as StatusFilter;
   const sort = p.get("sort") as SortKey;
   return {
-    page: path.startsWith("statistieken") ? "statistieken" : "overzicht",
+    page: path.startsWith("statistieken") ? "statistieken" : path.startsWith("voortgang") ? "voortgang" : "overzicht",
     theme: p.get("thema"),
     person: p.get("persoon"),
     status: STATUSES.includes(status) ? status : "all",
@@ -47,6 +47,7 @@ function toUrl(r: Route): string {
   const base = window.location.pathname + window.location.search;
   // De statistiekenpagina heeft geen filters; die blijven wel bewaard voor de terugweg.
   if (r.page === "statistieken") return `${base}#/statistieken`;
+  if (r.page === "voortgang") return `${base}#/voortgang`;
   const p = new URLSearchParams();
   if (r.theme) p.set("thema", r.theme);
   if (r.person) p.set("persoon", r.person);

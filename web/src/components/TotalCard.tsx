@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { haptic } from "../haptics";
 import { usePlanet } from "../hooks";
 import type { Dashboard } from "../types";
@@ -57,8 +57,16 @@ function Tile({ value, label, tone }: { value: number; label: string; tone: stri
   );
 }
 
+interface Props {
+  totals: Dashboard["totals"];
+  /** Groot weergeven (eigen pagina, vult het scherm). */
+  full?: boolean;
+  /** Knoppen linksboven in de kaart. */
+  toolbar?: ReactNode;
+}
+
 /** Totale voortgang: halve meter met het percentage, en daaronder klaar / bezig / nog niet gestart. */
-export function TotalCard({ totals: t }: { totals: Dashboard["totals"] }) {
+export function TotalCard({ totals: t, full = false, toolbar }: Props) {
   const pct = Math.max(0, Math.min(100, Math.round(t.progress)));
   const shown = useTween(pct);
   const n = Math.round(shown);
@@ -73,10 +81,12 @@ export function TotalCard({ totals: t }: { totals: Dashboard["totals"] }) {
   useConfetti(end, n, "Totale voortgang");
 
   return (
-    <section ref={card} className="card total" style={{ "--tone": progressColor(pct) } as CSSProperties}>
+    <section ref={card} className={`card total ${full ? "total--full" : ""}`} style={{ "--tone": progressColor(pct) } as CSSProperties}>
       <div className="total__aurora" aria-hidden>
         <i /> <i /> <i /> <i />
       </div>
+
+      {toolbar && <div className="total__bar">{toolbar}</div>}
 
       <button
         ref={haptic}
