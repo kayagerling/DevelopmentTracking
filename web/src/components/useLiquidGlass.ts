@@ -12,9 +12,9 @@ import { useEffect, type RefObject } from "react";
 const FRAME_MS = 1000 / 30;
 
 const GLASS = {
-  blurAmount: 0.00,
-  refraction: 0.69,
-  chromAberration: 0.05,
+  blurAmount: 0.50,
+  refraction: 2,
+  chromAberration: 0.02,
   fresnel: 1,
   zRadius: 10, // ondiepe rand: bij een diepere geeft de spiegeling vreemde balkjes op zulke kleine tegels
   shadowSpread: 12,
@@ -25,7 +25,7 @@ const GLASS = {
 /** Per thema: op een lichte achtergrond stralen randlicht en reflectie anders alles wit. */
 const THEMED = {
   dark: { edgeHighlight: 0.05, specular: 0.00, brightness: 0.04, shadowOpacity: 0.3 },
-  light: { edgeHighlight: 0.25, specular: 0.25, fresnel: 0.35, brightness: -0.03, shadowOpacity: 0.12 },
+  light: { edgeHighlight: 0.25, specular: 0.00, fresnel: 0.35, brightness: -0.03, shadowOpacity: 0.12 },
 };
 
 const isDark = () => {
