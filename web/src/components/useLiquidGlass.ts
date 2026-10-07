@@ -12,7 +12,7 @@ import { useEffect, type RefObject } from "react";
 const FRAME_MS = 1000 / 30;
 
 const GLASS = {
-  blurAmount: 0.50,
+  blurAmount: 0.8,
   refraction: 2,
   chromAberration: 0.02,
   fresnel: 1,
